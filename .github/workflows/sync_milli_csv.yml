@@ -1,0 +1,68 @@
+name: Sync milli CSV/TSV (public Sheets)
+
+on:
+  schedule:
+    - cron: '15 20 * * *'   # 毎日 05:15 JST (= 20:15 UTC)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    env:
+      # === Google Sheets IDs ===
+      SCORE_ID: 1Dmv06IhjwIR8nhoKPF158GsyGAF39CQIijIi0k134oA
+      PERSONA_ID: 1z-vz7o91NNwZcz_lCy0WoN2vKoX87wKiT25GPNe6Hh4
+      COMPLAIN_ID: 1EXOUNdG-koe12QM-zuE3UYGE4bVpQD1hRROUJwMn3JU
+
+      SCORE_GID: "0"
+      PERSONA_GID: "0"
+      COMPLAIN_GID: "0"
+
+      # === 保存先 ===
+      OUT_SCORE: ishikawa/milli_score.csv
+      OUT_PERSONA: ishikawa/milli_persona.csv
+      OUT_COMPLAIN: ishikawa/milli_complain.tsv
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Remove mistaken path tifo/ishikawa (once)
+        run: |
+          if [ -d "tifo/ishikawa" ]; then
+            rm -rf tifo/ishikawa
+          fi
+
+      - name: Fetch CSV/TSV files
+        run: |
+          set -euo pipefail
+          mkdir -p "$(dirname "$OUT_SCORE")"
+
+          fetch () {
+            id="$1"; gid="$2"; fmt="$3"; out="$4"; tmp="$(mktemp)"
+            url="https://docs.google.com/spreadsheets/d/${id}/export?format=${fmt}&gid=${gid}&_ts=$(date +%s)"
+            curl -fsSL --retry 5 --retry-delay 3 -H 'Cache-Control: no-cache' "$url" -o "$tmp"
+            head -c 512 "$tmp" | grep -qi "<html" && { echo "ERROR: got HTML instead of ${fmt}"; exit 1; }
+            mv "$tmp" "$out"
+            echo "Saved $out"
+          }
+
+          fetch "$SCORE_ID"   "$SCORE_GID"   "csv" "$OUT_SCORE"
+          fetch "$PERSONA_ID" "$PERSONA_GID" "csv" "$OUT_PERSONA"
+          fetch "$COMPLAIN_ID" "$COMPLAIN_GID" "tsv" "$OUT_COMPLAIN"
+
+      - name: Commit & push if changed
+        run: |
+          set -e
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "chore: daily sync CSV/TSV ($(date -u +'%Y-%m-%dT%H:%M:%SZ'))"
+            git push
+          fi
