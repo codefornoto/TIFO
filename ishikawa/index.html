@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TIFO - 観光猫型アドバイザリー</title>
+    <title>TIFO - 観光猫型AIアドバイザリー</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -74,9 +74,33 @@
         .nps-bar-container { position: relative; background: linear-gradient(to right, #FEB2B2, #EDF2F7, #9AE6B4); height: 0.75rem; border-radius: 9999px; }
         .nps-bar-marker { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 2px; height: 1.25rem; background-color: rgba(113, 128, 150, 0.5); border-radius: 1px; }
         .nps-bar-value { position: absolute; top: 50%; transform: translateY(-50%); width: 0.75rem; height: 0.75rem; background-color: var(--tifo-text); border-radius: 50%; border: 2px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.3); transition: left 0.5s ease-in-out; }
-        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 50; }
-        .modal-content { background-color: white; padding: 2rem; border-radius: 1rem; max-width: 90%; width: 600px; max-height: 80vh; overflow-y: auto; }
-        
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(45, 55, 72, 0.75);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 50;
+            transition: opacity 0.3s ease;
+        }
+        .modal-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .modal-content {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 1.5rem;
+            max-width: 90%;
+            width: 650px;
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+        .modal-overlay.hidden .modal-content {
+             transform: translateY(-20px);
+             opacity: 0;
+        }
         .feedback-tab-button {
             padding: 0.5rem 0.75rem;
             border-bottom: 3px solid transparent;
@@ -140,9 +164,8 @@
             <section>
                 <h2 class="text-2xl font-bold mb-4 flex items-center">基本スコア</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                    <!-- ▼▼▼ 前月比を削除 ▼▼▼ -->
-                    <div class="tifo-card text-center"><h3 class="text-lg font-bold mb-2">全回答数</h3><p id="total-answers" class="text-6xl font-bold" style="color: var(--tifo-primary);"></p><p id="total-answers-rank" class="text-sm text-gray-500 mt-3"></p></div>
-                    <div class="tifo-card text-center"><h3 class="text-lg font-bold mb-2">❤️ NPS (顧客推奨度)</h3><p id="nps-score" class="text-6xl font-bold" style="color: var(--tifo-primary);"></p><p class="text-xs text-gray-500">(-100 ~ 100の範囲)</p><div class="w-full mt-3 relative"><div class="nps-bar-container"><div class="nps-bar-marker"></div><div id="nps-bar-value" class="nps-bar-value"></div></div></div><p id="nps-rank" class="text-sm text-gray-500 mt-3"></p></div>
+                     <div class="tifo-card text-center"><h3 class="text-lg font-bold mb-2">全回答数</h3><p id="total-answers" class="text-6xl font-bold" style="color: var(--tifo-primary);"></p><p id="total-answers-rank" class="text-sm text-gray-500 mt-3"></p></div>
+                     <div class="tifo-card text-center"><h3 class="text-lg font-bold mb-2">❤️ NPS (顧客推奨度)</h3><p id="nps-score" class="text-6xl font-bold" style="color: var(--tifo-primary);"></p><p class="text-xs text-gray-500">(-100 ~ 100の範囲)</p><div class="w-full mt-3 relative"><div class="nps-bar-container"><div class="nps-bar-marker"></div><div id="nps-bar-value" class="nps-bar-value"></div></div></div><p id="nps-rank" class="text-sm text-gray-500 mt-3"></p></div>
                 </div>
                 <h2 class="text-2xl font-bold mb-4 flex items-center">各種満足度スコア</h2>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -153,54 +176,73 @@
             </section>
             
             <section id="persona-section" class="tifo-card hidden">
-                <h2 class="text-2xl font-bold mb-2 flex items-center gap-3">ペルソナ分析</h2>
-                <p class="text-gray-600 mb-6">あなたの施設に最も回答している顧客グループTOP3です。</p>
-                <div id="persona-container" class="space-y-6"></div>
-                <template id="persona-template">
-                    <div class="border border-gray-200 rounded-xl p-4">
-                        <div class="flex items-center gap-4 mb-3">
-                            <span class="rank-badge"></span>
-                            <h3 class="text-xl font-bold text-gray-800"></h3>
-                        </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
-                            <div class="persona-details space-y-2 text-gray-700">
-                                <p class="flex items-center gap-3"><span class="persona-companion-icon text-2xl w-8 text-center"></span> <span class="font-bold">同伴者:</span> <span class="persona-companion"></span></p>
-                                <p class="flex items-center gap-3"><span class="persona-age-icon text-2xl w-8 text-center"></span> <span class="font-bold">年　代:</span> <span class="persona-age"></span></p>
-                                <p class="flex items-center gap-3"><span class="text-2xl w-8 text-center">🗾</span> <span class="font-bold">地　方:</span> <span class="persona-region"></span></p>
-                                <p class="flex items-center gap-3"><span class="text-2xl w-8 text-center">💰</span> <span class="font-bold">年　収:</span> <span class="persona-income"></span></p>
-                            </div>
-                            <div class="space-y-2">
-                                <label class="font-bold text-gray-700">回答者全体における割合（確度）</label>
-                                <div class="progress-bar-bg"><div class="progress-bar" style="width: 0%;"></div></div>
-                                <p class="persona-counts text-right text-sm text-gray-500"></p>
-                            </div>
-                        </div>
-                    </div>
-                </template>
+                 <h2 class="text-2xl font-bold mb-2 flex items-center gap-3">ペルソナ分析</h2>
+                 <p class="text-gray-600 mb-6">あなたの施設に最も回答している顧客グループTOP3です。</p>
+                 <div id="persona-container" class="space-y-6"></div>
+                 <template id="persona-template">
+                     <div class="border border-gray-200 rounded-xl p-4">
+                         <div class="flex items-center gap-4 mb-3">
+                             <span class="rank-badge"></span>
+                             <h3 class="text-xl font-bold text-gray-800"></h3>
+                         </div>
+                         <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+                             <div class="persona-details space-y-2 text-gray-700">
+                                 <p class="flex items-center gap-3"><span class="persona-companion-icon text-2xl w-8 text-center"></span> <span class="font-bold">同伴者:</span> <span class="persona-companion"></span></p>
+                                 <p class="flex items-center gap-3"><span class="persona-age-icon text-2xl w-8 text-center"></span> <span class="font-bold">年　代:</span> <span class="persona-age"></span></p>
+                                 <p class="flex items-center gap-3"><span class="text-2xl w-8 text-center">🗾</span> <span class="font-bold">地　方:</span> <span class="persona-region"></span></p>
+                                 <p class="flex items-center gap-3"><span class="text-2xl w-8 text-center">💰</span> <span class="font-bold">年　収:</span> <span class="persona-income"></span></p>
+                             </div>
+                             <div class="space-y-2">
+                                 <label class="font-bold text-gray-700">回答者全体における割合（確度）</label>
+                                 <div class="progress-bar-bg"><div class="progress-bar" style="width: 0%;"></div></div>
+                                 <p class="persona-counts text-right text-sm text-gray-500"></p>
+                             </div>
+                         </div>
+                     </div>
+                 </template>
             </section>
             
             <section id="customer-voice-section">
-                <h2 class="text-2xl font-bold mb-4 flex items-center">過去１か月の観光客の声</h2>
-                <div class="tifo-card !p-0 overflow-hidden">
-                    <div class="px-6 border-b border-gray-200">
-                        <nav class="-mb-px flex space-x-2 overflow-x-auto" aria-label="Tabs">
-                            <button data-tab="service" class="feedback-tab-button active">商品・サービス</button>
-                            <button data-tab="facility" class="feedback-tab-button">施設全体</button>
-                            <button data-tab="inconvenience" class="feedback-tab-button">不便な点</button>
-                            <button data-tab="request" class="feedback-tab-button">リクエスト</button>
-                            <button data-tab="nps" class="feedback-tab-button">NPSの理由</button>
-                        </nav>
-                    </div>
-                    <div class="p-6 bg-gray-50">
-                        <div id="feedback-content-service" class="feedback-content custom-scrollbar space-y-4"></div>
-                        <div id="feedback-content-facility" class="feedback-content custom-scrollbar space-y-4 hidden"></div>
-                        <div id="feedback-content-inconvenience" class="feedback-content custom-scrollbar space-y-4 hidden"></div>
-                        <div id="feedback-content-request" class="feedback-content custom-scrollbar space-y-4 hidden"></div>
-                        <div id="feedback-content-nps" class="feedback-content custom-scrollbar space-y-4 hidden"></div>
+                 <h2 class="text-2xl font-bold mb-4 flex items-center">お客様の声</h2>
+                 <div class="tifo-card !p-0 overflow-hidden">
+                     <div class="px-6 border-b border-gray-200">
+                         <nav class="-mb-px flex space-x-2 overflow-x-auto" aria-label="Tabs">
+                             <button data-tab="service" class="feedback-tab-button active">商品・サービス</button>
+                             <button data-tab="facility" class="feedback-tab-button">施設全体</button>
+                             <button data-tab="inconvenience" class="feedback-tab-button">不便な点</button>
+                             <button data-tab="request" class="feedback-tab-button">リクエスト</button>
+                             <button data-tab="nps" class="feedback-tab-button">NPSの理由</button>
+                         </nav>
+                     </div>
+                     <div class="p-6 bg-gray-50">
+                         <div id="feedback-content-service" class="feedback-content custom-scrollbar space-y-4"></div>
+                         <div id="feedback-content-facility" class="feedback-content custom-scrollbar space-y-4 hidden"></div>
+                         <div id="feedback-content-inconvenience" class="feedback-content custom-scrollbar space-y-4 hidden"></div>
+                         <div id="feedback-content-request" class="feedback-content custom-scrollbar space-y-4 hidden"></div>
+                         <div id="feedback-content-nps" class="feedback-content custom-scrollbar space-y-4 hidden"></div>
+                     </div>
+                 </div>
+            </section>
+
+            <section id="ai-advice-section">
+                <h2 class="text-2xl font-bold mb-4 flex items-center">TifoちゃんからのAIアドバイス</h2>
+                <div class="flex items-stretch md:items-start gap-4">
+                    <img src="../tifo.png" alt="TIFOちゃん" class="h-32 w-32 object-contain flex-shrink-0 hidden md:block">
+                    <div class="bg-white p-6 rounded-xl md:rounded-r-xl md:rounded-bl-xl relative w-full flex-1 border border-gray-200">
+                        <div class="absolute left-[-10px] top-[15px] w-0 h-0 border-t-[10px] border-t-transparent border-r-[10px] border-r-white border-b-[10px] border-b-transparent hidden md:block"></div>
+                        <div class="flex flex-col h-full">
+                            <div>
+                                <p class="text-gray-800 font-bold text-lg"><strong id="ai-advice-facility-name"></strong>さんへ</p>
+                                <p class="text-gray-600 mt-2">ペルソナと自由記述の意見を元にアドバイスを考えたにゃ🐾</p>
+                            </div>
+                            <div class="mt-auto pt-4 text-center md:text-right">
+                                <button id="open-ai-advice-btn" class="tifo-button">AIからのアドバイスを見る</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </section>
-
+            
             <section>
                 <h2 class="text-2xl font-bold mb-4 flex items-center">グループ別 来訪者TOP5</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -217,14 +259,14 @@
             <section>
                  <h2 class="text-2xl font-bold mb-4 flex items-center">Tifoちゃんからのアドバイス</h2>
                  <div class="flex items-start gap-4">
-                      <img src="../tifo.png" alt="TIFOちゃん" class="h-32 w-32 object-contain flex-shrink-0">
-                      <div class="bg-white p-4 rounded-r-xl rounded-bl-xl relative w-full">
-                           <div class="absolute left-[-10px] top-[15px] w-0 h-0 border-t-[10px] border-t-transparent border-r-[10px] border-r-white border-b-[10px] border-b-transparent"></div>
-                           <p id="tifo-advice-text" class="text-gray-700"></p>
-                      </div>
+                       <img src="../tifo.png" alt="TIFOちゃん" class="h-32 w-32 object-contain flex-shrink-0">
+                       <div class="bg-white p-4 rounded-r-xl rounded-bl-xl relative w-full">
+                             <div class="absolute left-[-10px] top-[15px] w-0 h-0 border-t-[10px] border-t-transparent border-r-[10px] border-r-white border-b-[10px] border-b-transparent"></div>
+                            <p id="tifo-advice-text" class="text-gray-700"></p>
+                       </div>
                  </div>
             </section>
-            <!-- ▼▼▼ 戻るボタンを追加 ▼▼▼ -->
+
             <div class="mt-8 flex justify-center">
                 <button id="back-button-bottom" class="tifo-button">戻る</button>
             </div>
@@ -233,10 +275,24 @@
 
     <!-- 免責事項モーダル -->
     <div id="disclaimer-modal" class="modal-overlay hidden">
-        <div class="modal-content">
+        <div class="modal-content !w-[600px] !p-8">
             <h2 class="text-2xl font-bold mb-4">免責事項</h2>
             <div id="disclaimer-text" class="text-sm text-gray-600 leading-relaxed space-y-2"></div>
             <button id="close-modal-button" class="tifo-button mt-6 w-full">閉じる</button>
+        </div>
+    </div>
+
+    <!-- AIアドバイスモーダル -->
+    <div id="ai-advice-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="flex-shrink-0 flex justify-between items-center border-b border-gray-200 pb-4 mb-4">
+                <h2 class="text-xl font-bold text-gray-800">TifoちゃんからのAIアドバイス</h2>
+                <button id="close-ai-advice-modal-btn" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <div id="ai-advice-modal-body" class="flex-grow overflow-y-auto custom-scrollbar pr-2 whitespace-pre-wrap text-gray-700 leading-relaxed">
+            </div>
         </div>
     </div>
 
@@ -245,6 +301,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     let surveyData = [];
     let personaData = [];
     let complainData = [];
+    let aiAdviceData = [];
     let scoreFacilityKey = '';
     let personaFacilityKey = '';
     let adviceLines = [];
@@ -254,28 +311,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     const facilitySelect = document.getElementById('facility-select');
     const analyzeButton = document.getElementById('analyze-button');
     const backButton = document.getElementById('back-button');
-    const backButtonBottom = document.getElementById('back-button-bottom'); // ▼▼▼ 追加 ▼▼▼
+    const backButtonBottom = document.getElementById('back-button-bottom');
     const loadingMessage = document.getElementById('loading-message');
     const mainContent = document.getElementById('main-content');
     const disclaimerButton = document.getElementById('disclaimer-button');
     const disclaimerModal = document.getElementById('disclaimer-modal');
     const closeModalButton = document.getElementById('close-modal-button');
     
+    const aiAdviceModal = document.getElementById('ai-advice-modal');
+    const openAiAdviceBtn = document.getElementById('open-ai-advice-btn');
+    const closeAiAdviceModalBtn = document.getElementById('close-ai-advice-modal-btn');
+    const aiAdviceModalBody = document.getElementById('ai-advice-modal-body');
+
     const complainColIndex = {
-        FACILITY: 1,
-        TIMESTAMP: 2,
-        SERVICE_SATISFACTION: 24,
-        SERVICE_REASON: 25,
-        FACILITY_SATISFACTION: 26,
-        FACILITY_REASON: 27,
-        INCONVENIENCE: 28,
-        INCONVENIENCE_REASON: 29,
-        NPS_SCORE: 30, // ▼▼▼ NPSスコアの列番号を追加 ▼▼▼
-        REQUEST: 31,
-        NPS_REASON: 42,
-        BIRTH_YEAR: 35,
-        PREFECTURE: 36,
-        GENDER: 34,
+        FACILITY: 1, TIMESTAMP: 2, SERVICE_SATISFACTION: 24, SERVICE_REASON: 25,
+        FACILITY_SATISFACTION: 26, FACILITY_REASON: 27, INCONVENIENCE: 28, INCONVENIENCE_REASON: 29,
+        NPS_SCORE: 30, REQUEST: 31, NPS_REASON: 42, BIRTH_YEAR: 35, PREFECTURE: 36, GENDER: 34,
     };
 
     function parseCSVWithHeaders(text) {
@@ -311,6 +362,32 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
         return { data, key: facilityKey };
     }
+    
+    function parseAIAdviceTSV(text) {
+        const allLines = text.trim().replace(/\r/g, '').split('\n');
+        if (allLines.length < 2) return { data: [], key: '' };
+        const headers = allLines.shift().split('\t').map(h => h.trim());
+        const facilityKey = headers.includes('施設名') ? '施設名' : headers[0];
+        const data = [];
+        let currentObject = null;
+        for (const line of allLines) {
+            const parts = line.split('\t');
+            if (parts.length > 2) { 
+                if (currentObject) data.push(currentObject);
+                currentObject = {};
+                headers.forEach((header, i) => {
+                    currentObject[header] = (parts[i] || '').trim().replace(/^"|"$/g, '');
+                });
+            } else {
+                if (currentObject) {
+                    const lastHeader = headers[headers.length - 1];
+                    currentObject[lastHeader] += '\n' + line.trim().replace(/^"|"$/g, '');
+                }
+            }
+        }
+        if (currentObject) data.push(currentObject);
+        return { data, key: facilityKey };
+    }
 
     function parseTSVAsArrays(text) {
         const lines = text.trim().replace(/\r/g, '').split('\n');
@@ -324,7 +401,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         const text = await response.text();
         const cleanText = text.charCodeAt(0) === 0xFEFF ? text.slice(1) : text;
         
-        if (format === 'tsv-array') {
+        if (format === 'ai-advice-tsv') {
+            return parseAIAdviceTSV(cleanText);
+        }
+        if (format === 'tsv-array') { 
             return parseTSVAsArrays(cleanText);
         }
         return parseCSVWithHeaders(cleanText);
@@ -363,6 +443,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             loadingStatus.textContent = '口コミデータを読み込み中...';
             complainData = await fetchAndParse('./milli_complain.tsv', 'tsv-array');
+            
+            loadingStatus.textContent = 'AIアドバイスを準備中...';
+            const aiAdviceResult = await fetchAndParse('./milli_ai_advice.tsv', 'ai-advice-tsv');
+            aiAdviceData = aiAdviceResult.data;
 
             loadingStatus.textContent = '追加データを読み込み中...';
             const adviceResponse = await fetch('../tifo_advice.txt').catch(e => null);
@@ -395,7 +479,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     analyzeButton.addEventListener('click', () => { location.hash = encodeURIComponent(facilitySelect.value); });
     backButton.addEventListener('click', () => { location.hash = ''; });
-    backButtonBottom.addEventListener('click', () => { location.hash = ''; }); // ▼▼▼ 追加 ▼▼▼
+    backButtonBottom.addEventListener('click', () => { location.hash = ''; });
     window.addEventListener('hashchange', handleRouteChange);
     disclaimerButton.addEventListener('click', async () => {
         try {
@@ -411,6 +495,28 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
     closeModalButton.addEventListener('click', () => { disclaimerModal.classList.add('hidden'); });
     disclaimerModal.addEventListener('click', (e) => { if(e.target === disclaimerModal) disclaimerModal.classList.add('hidden'); });
+
+    openAiAdviceBtn.addEventListener('click', () => {
+        const facilityName = facilitySelect.value;
+        const adviceInfo = aiAdviceData.find(d => d['施設名'] === facilityName);
+        
+        if (adviceInfo && adviceInfo['AIアドバイス']) {
+            aiAdviceModalBody.textContent = adviceInfo['AIアドバイス'];
+        } else {
+            aiAdviceModalBody.textContent = 'この施設に関するAIアドバイスは現在ありません。';
+        }
+        aiAdviceModal.classList.remove('hidden');
+    });
+
+    closeAiAdviceModalBtn.addEventListener('click', () => {
+        aiAdviceModal.classList.add('hidden');
+    });
+
+    aiAdviceModal.addEventListener('click', (e) => {
+        if (e.target === aiAdviceModal) {
+            aiAdviceModal.classList.add('hidden');
+        }
+    });
 
     function getRank(value, dataKey) {
         if (value === null || value === undefined) return { rank: 'N/A', total: surveyData.length };
@@ -449,14 +555,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         const container = document.getElementById('persona-container');
         const template = document.getElementById('persona-template');
         container.innerHTML = '';
-
         const personaRow = personaData.find(p => p[personaFacilityKey] === facilityName);
-
         if (!personaRow) {
             personaSection.classList.add('hidden');
             return;
         }
-
         const personas = [];
         for (let i = 1; i <= 3; i++) {
             if (personaRow[`ps${i}_カウント`]) {
@@ -470,18 +573,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                 });
             }
         }
-        
         if (personas.length === 0) {
             personaSection.classList.add('hidden');
             return;
         }
-
         const companionIcons = { "家族連れ": "👪", "2人組": "👫", "友人": "🧑‍🤝‍🧑", "default": "👤" };
         const ageIcons = { "若年層": "👦", "中年層": "👨‍💼", "高齢層": "👵", "default": "👤" };
         const rankClasses = ["rank-1", "rank-2", "rank-3"];
         const rankTitles = ["ペルソナ１", "ペルソナ２", "ペルソナ３"];
         const totalAnswers = Number(scoreData['全回答数']);
-
         personas.forEach((persona, index) => {
             const clone = template.content.cloneNode(true);
             const card = clone.querySelector('.border');
@@ -510,7 +610,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             container.appendChild(clone);
         });
-
         personaSection.classList.remove('hidden');
     }
 
@@ -535,16 +634,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             cyan: { icon: 'text-cyan-500', label: 'text-cyan-800', bg: 'bg-cyan-100' },
             purple: { icon: 'text-purple-500', label: 'text-purple-800', bg: 'bg-purple-100' },
         };
-
-        const oneMonthAgo = new Date();
-        oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
-
+        
+        // ▼▼▼ 日付フィルターを削除し、施設名での絞り込みのみ実行 ▼▼▼
         const filteredData = complainData
-            .filter(row => {
-                if (row[complainColIndex.FACILITY] !== facilityName) return false;
-                const timestamp = new Date(row[complainColIndex.TIMESTAMP]);
-                return !isNaN(timestamp) && timestamp >= oneMonthAgo;
-            })
+            .filter(row => row && row[complainColIndex.FACILITY] === facilityName)
             .sort((a, b) => new Date(b[complainColIndex.TIMESTAMP]) - new Date(a[complainColIndex.TIMESTAMP]));
 
         const feedback = { service: [], facility: [], inconvenience: [], request: [], nps: [] };
@@ -570,7 +663,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             const npsReason = row[complainColIndex.NPS_REASON];
             if (npsReason) {
-                feedback.nps.push({ ...commonData, text: npsReason, score: row[complainColIndex.NPS_SCORE] }); // ▼▼▼ スコアを追加 ▼▼▼
+                feedback.nps.push({ ...commonData, text: npsReason, score: row[complainColIndex.NPS_SCORE] });
             }
         });
 
@@ -581,12 +674,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             const colors = colorClasses[info.color];
             
-            // ▼▼▼ NPSスコア表示用のHTMLを生成 ▼▼▼
             const isNps = type === 'nps';
             const npsScoreBadge = isNps && comment.score !== undefined
                 ? `<span class="ml-auto text-xs font-bold px-2 py-1 rounded-full bg-purple-200 text-purple-800">評価: ${comment.score}点</span>`
                 : '';
-
             return `
                 <div class="bg-white p-4 rounded-lg border border-gray-200">
                     <div class="flex items-start space-x-4">
@@ -620,7 +711,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         renderComments('feedback-content-inconvenience', feedback.inconvenience, 'inconvenience');
         renderComments('feedback-content-request', feedback.request, 'request');
         renderComments('feedback-content-nps', feedback.nps, 'nps');
-
+        
         const tabs = document.querySelectorAll('.feedback-tab-button');
         const contents = document.querySelectorAll('.feedback-content');
         
@@ -636,19 +727,22 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         });
         
-        if (tabs.length > 0) {
+        if (tabs.length > 0 && !document.querySelector('.feedback-tab-button.active')) {
             tabs[0].classList.add('active');
             contents.forEach(c => c.classList.add('hidden'));
             document.getElementById(`feedback-content-${tabs[0].dataset.tab}`).classList.remove('hidden');
         }
     }
 
+
     function displayAnalysis(data) {
         const facilityName = data[scoreFacilityKey];
         document.getElementById('facility-title').textContent = `${facilityName} の分析結果`;
         
+        document.getElementById('ai-advice-facility-name').textContent = facilityName;
+        
         document.getElementById('total-answers').textContent = data['全回答数'] ?? 'N/A';
-        const answersRank = getRank(data['全回答数'], '全回答数'); // ▼▼▼ 前月比の代わりに順位を表示 ▼▼▼
+        const answersRank = getRank(data['全回答数'], '全回答数');
         document.getElementById('total-answers-rank').textContent = `(全${answersRank.total}施設中 ${answersRank.rank}位)`;
         
         const nps = data.NPS;
@@ -664,7 +758,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         updateSatisfactionCard('trip-satisfaction', data['旅全体満足度'], '旅全体満足度');
         
         displayPersonaAnalysis(data, facilityName);
-
         displayCustomerFeedback(facilityName);
         
         const ageGroups = { '10代': data['10代'], '20代': data['20代'], '30代': data['30代'], '40代': data['40代'], '50代': data['50代'], '60代': data['60代'], '70代': data['70代'], '80代': data['80代'], '90代': data['90代'], '100代': data['100代'] };
@@ -672,7 +765,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         const stayDurationGroups = { '日帰り': data['日帰り'], '1泊': data['1泊'], '2泊': data['2泊'], '3泊': data['3泊'], '4泊以上': data['4泊以上'] };
         const companionGroups = { 'ひとり旅': data['自分ひとり'], '恋人と': data['恋人'], '友人と': data['友人'], '夫婦2人': data['夫婦2人'], '団体旅行': data['団体旅行'], '親戚と': data['親戚'], '親と': data['親'], '職場の同僚と': data['職場の同僚'], '家族(小学生以下)': data['小学生以下連れの家族'], '家族(中学生)': data['中学生以下連れの家族'], '家族(高校生)': data['高校生連れの家族'] };
         const purposeGroups = { '宿でのんびり': data['宿でのんびり過ごす'], '温泉': data['温泉や露天風呂'], 'グルメ': data['地元の美味しいものを食べる'], '自然鑑賞': data['花見や紅葉などの自然鑑賞'], '名所・旧跡観光': data['名所、旧跡の観光'], 'テーマパーク': data['テーマパーク（遊園地、動物園、博物館など）'], '買い物': data['買い物、アウトレット'], 'イベント': data['お祭りやイベントへの参加・見物'], '鑑賞': data['スポーツ観戦や芸能鑑賞（コンサート等）'], 'アウトドア': data['アウトドア（海水浴、釣り、登山など）'], 'まちあるき': data['まちあるき、都市散策'], '体験': data['各種体験（手作り、果物狩りなど）'], 'スポーツ': data['スキー・スノボ、マリンスポーツ'] || data['その他スポーツ（ゴルフ、テニスなど）'], 'ドライブ': data['ドライブ・ツーリング'], '知人訪問': data['友人・親戚を尋ねる'], '仕事関係': data['出張など仕事関係'] };
-        
         const incomeGroups = {
             '100万円未満': data['100万円未満'], '100-200万円': data['100万円以上 200万円未満'], '200-300万円': data['200万円以上 300万円未満'],
             '300-400万円': data['300万円以上 400万円未満'], '400-500万円': data['400万円以上 500万円未満'], '500-600万円': data['500万円以上 600万円未満'],
