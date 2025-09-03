@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TIFO - 観光猫型AIアドバイザリー</title>
+    <title>TIFO - 観光猫型アドバイザリー</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -203,7 +203,7 @@
             </section>
             
             <section id="customer-voice-section">
-                 <h2 class="text-2xl font-bold mb-4 flex items-center">お客様の声</h2>
+                 <h2 class="text-2xl font-bold mb-4 flex items-center">直近１か月のお客様の声</h2>
                  <div class="tifo-card !p-0 overflow-hidden">
                      <div class="px-6 border-b border-gray-200">
                          <nav class="-mb-px flex space-x-2 overflow-x-auto" aria-label="Tabs">
@@ -273,14 +273,25 @@
         </main>
     </div>
 
-    <!-- 免責事項モーダル -->
+    <!-- ▼▼▼ 免責事項モーダル構造修正 ▼▼▼ -->
     <div id="disclaimer-modal" class="modal-overlay hidden">
-        <div class="modal-content !w-[600px] !p-8">
-            <h2 class="text-2xl font-bold mb-4">免責事項</h2>
-            <div id="disclaimer-text" class="text-sm text-gray-600 leading-relaxed space-y-2"></div>
-            <button id="close-modal-button" class="tifo-button mt-6 w-full">閉じる</button>
+        <div class="modal-content !w-[600px]">
+            <div class="flex-shrink-0 flex justify-between items-center pb-4 mb-4 border-b">
+                <h2 class="text-2xl font-bold">免責事項</h2>
+                <button id="close-disclaimer-icon-btn" class="text-gray-400 hover:text-gray-600 transition-colors">
+                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <div id="disclaimer-text" class="flex-grow overflow-y-auto custom-scrollbar pr-2 text-sm text-gray-600 leading-relaxed space-y-2">
+                <!-- Content will be inserted here -->
+            </div>
+            <div class="flex-shrink-0 pt-6">
+                <button id="close-modal-button" class="tifo-button w-full">閉じる</button>
+            </div>
         </div>
     </div>
+    <!-- ▲▲▲ 免責事項モーダル構造修正 ▲▲▲ -->
+
 
     <!-- AIアドバイスモーダル -->
     <div id="ai-advice-modal" class="modal-overlay hidden">
@@ -317,6 +328,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const disclaimerButton = document.getElementById('disclaimer-button');
     const disclaimerModal = document.getElementById('disclaimer-modal');
     const closeModalButton = document.getElementById('close-modal-button');
+    const closeDisclaimerIconBtn = document.getElementById('close-disclaimer-icon-btn'); // ▼▼▼ 追加 ▼▼▼
     
     const aiAdviceModal = document.getElementById('ai-advice-modal');
     const openAiAdviceBtn = document.getElementById('open-ai-advice-btn');
@@ -481,8 +493,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     backButton.addEventListener('click', () => { location.hash = ''; });
     backButtonBottom.addEventListener('click', () => { location.hash = ''; });
     window.addEventListener('hashchange', handleRouteChange);
-    disclaimerButton.addEventListener('click', async () => {
-        try {
+    
+    // ▼▼▼ 免責事項モーダルのイベントリスナー修正 ▼▼▼
+    const openDisclaimerModal = async () => {
+         try {
             const response = await fetch('../credit.txt');
             if (!response.ok) throw new Error('File not found');
             const text = await response.text();
@@ -492,9 +506,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('disclaimer-text').textContent = '免責事項ファイルの読み込みに失敗しました。';
             disclaimerModal.classList.remove('hidden');
         }
-    });
-    closeModalButton.addEventListener('click', () => { disclaimerModal.classList.add('hidden'); });
-    disclaimerModal.addEventListener('click', (e) => { if(e.target === disclaimerModal) disclaimerModal.classList.add('hidden'); });
+    };
+    const closeDisclaimerModal = () => {
+        disclaimerModal.classList.add('hidden');
+    };
+    disclaimerButton.addEventListener('click', openDisclaimerModal);
+    closeModalButton.addEventListener('click', closeDisclaimerModal);
+    closeDisclaimerIconBtn.addEventListener('click', closeDisclaimerModal);
+    disclaimerModal.addEventListener('click', (e) => { if(e.target === disclaimerModal) closeDisclaimerModal(); });
 
     openAiAdviceBtn.addEventListener('click', () => {
         const facilityName = facilitySelect.value;
@@ -635,7 +654,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             purple: { icon: 'text-purple-500', label: 'text-purple-800', bg: 'bg-purple-100' },
         };
         
-        // ▼▼▼ 日付フィルターを削除し、施設名での絞り込みのみ実行 ▼▼▼
         const filteredData = complainData
             .filter(row => row && row[complainColIndex.FACILITY] === facilityName)
             .sort((a, b) => new Date(b[complainColIndex.TIMESTAMP]) - new Date(a[complainColIndex.TIMESTAMP]));
