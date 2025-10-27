@@ -60,21 +60,7 @@
             transform: translateY(2px);
             border-bottom-width: 2px;
         }
-        /* つぶやきボタンのスタイル */
-        .tifo-button-secondary {
-            background-color: #fff;
-            color: var(--tifo-primary);
-            border: 2px solid var(--tifo-primary);
-            font-weight: bold;
-            padding: 0.75rem 1.5rem;
-            border-radius: 9999px;
-            transition: all 0.2s ease;
-        }
-        .tifo-button-secondary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 12px -3px rgba(79, 209, 197, 0.2);
-        }
-
+        
         .prefecture-btn {
             background-color: var(--tifo-card-bg);
             color: var(--tifo-primary-dark);
@@ -90,21 +76,73 @@
             border-color: var(--tifo-primary);
             box-shadow: 0 6px 12px -3px rgba(79, 209, 197, 0.3);
         }
-        .tab-button {
+
+        /* --- メインタブ --- */
+        .main-tab-button {
+            padding: 0.75rem 1.25rem;
+            font-weight: 600;
+            color: #A0AEC0;
+            transition: all 0.2s ease;
+            border-bottom: 4px solid transparent;
+            font-size: 0.95rem;
+        }
+        .main-tab-button:hover {
+            background-color: #F7FAFC;
+            color: #4A5568;
+        }
+        .main-tab-button.active {
+            color: var(--tifo-primary);
+            border-bottom-color: var(--tifo-primary);
+        }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        
+        /* --- サブタブ（全体ランキング内） --- */
+        .sub-tab-button {
             padding: 0.75rem 1rem;
             border-bottom: 3px solid transparent;
             font-weight: 600;
             color: #A0AEC0;
             transition: all 0.2s ease;
         }
-        .tab-button:hover {
+        .sub-tab-button:hover {
             background-color: #F7FAFC;
             color: #4A5568;
         }
-        .tab-button.active {
+        .sub-tab-button.active {
             color: var(--tifo-primary);
             border-bottom-color: var(--tifo-primary);
         }
+        
+        /* --- (NEW) 期間選択ボタン --- */
+        .period-button-group {
+            display: inline-flex;
+            border-radius: 0.75rem; /* rounded-xl */
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--tifo-card-border);
+            overflow: hidden;
+        }
+        .period-button {
+            padding: 0.5rem 1rem; /* py-2 px-4 */
+            font-size: 0.875rem; /* text-sm */
+            font-weight: 600; /* font-semibold */
+            background-color: #FFFFFF;
+            color: #6B7280; /* text-gray-500 */
+            border-right: 1px solid var(--tifo-card-border);
+            transition: all 0.2s ease;
+        }
+        .period-button:last-child {
+            border-right: none;
+        }
+        .period-button:hover {
+            background-color: #F9FAFB; /* hover:bg-gray-50 */
+        }
+        .period-button.active {
+            background-color: var(--tifo-primary);
+            color: white;
+            box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+        }
+
         .rank-badge {
             width: 2.25rem; height: 2.25rem; border-radius: 50%; display: inline-flex;
             align-items: center; justify-content: center; font-weight: bold; color: white;
@@ -132,17 +170,6 @@
 
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 50; }
         .modal-content { background-color: white; padding: 2rem; border-radius: 1rem; max-width: 90%; width: 700px; max-height: 80vh; overflow-y: auto; }
-
-        /* Markdown表示用スタイル */
-        .markdown-body h1 { font-size: 1.75rem; font-weight: bold; color: var(--tifo-primary); border-bottom: 2px solid var(--tifo-card-border); padding-bottom: 0.5rem; margin-bottom: 1rem; }
-        .markdown-body h2 { font-size: 1.5rem; font-weight: bold; margin-top: 2rem; margin-bottom: 1rem; padding-left: 0.75rem; border-left: 4px solid var(--tifo-primary); color: var(--tifo-text); }
-        .markdown-body h3 { font-size: 1.25rem; font-weight: bold; margin-top: 1.5rem; margin-bottom: 0.75rem; color: #4A5568; }
-        .markdown-body hr { border-top: 1px solid var(--tifo-card-border); margin: 2rem 0; }
-        .markdown-body ul { list-style: none; padding-left: 0; margin: 1rem 0; }
-        .markdown-body li { background-color: #F7FAFC; border-radius: 0.5rem; padding: 0.75rem 1rem; margin-bottom: 0.5rem; position: relative; padding-left: 2rem; }
-        .markdown-body li::before { content: '🐾'; position: absolute; left: 0.75rem; top: 0.75rem; color: var(--tifo-primary); }
-        .markdown-body strong { color: var(--tifo-primary-dark); font-weight: bold; }
-        .markdown-body p { margin-bottom: 1rem; line-height: 1.7; }
     </style>
 </head>
 <body class="text-gray-800">
@@ -153,7 +180,6 @@
 
     <main id="app-container" class="container mx-auto p-4 md:p-8 max-w-4xl hidden">
         <div id="intro-section">
-            <!-- Header: Logo and Character -->
             <header class="flex items-center justify-center gap-4 mb-4 text-center">
                 <a href="https://codefornoto.github.io/TIFO/" target="_blank" rel="noopener noreferrer">
                     <div class="w-24 h-24">
@@ -167,7 +193,6 @@
             </header>
             <p class="text-lg text-gray-600 mb-8 text-center">観光猫型AIアドバイザリー</p>
 
-            <!-- Prefecture Selection Buttons -->
             <section class="mb-8">
                 <div class="flex items-center justify-center gap-4">
                     <button class="prefecture-btn">富山</button>
@@ -176,57 +201,118 @@
                 </div>
             </section>
 
-            <!-- Action Buttons -->
             <section class="text-center mb-8 space-y-4">
                 <button id="analysis-btn" class="tifo-button text-lg px-8">
                     ３県連携データ分析
                 </button>
-                <br>
-                <button id="insights-btn" class="tifo-button-secondary text-md px-6">
-                    Tifoちゃんのつぶやき
-                </button>
             </section>
         </div>
-        <!-- Analysis Results Area -->
-        <div id="analysis-results" class="hidden space-y-8">
-            <section class="tifo-card">
-                <div class="flex border-b border-gray-200 mb-4">
-                    <button id="nps-tab" class="tab-button active">NPS</button>
-                    <button id="satisfaction-tab" class="tab-button">施設全体満足度</button>
+        
+        <div id="analysis-results" class="hidden space-y-6">
+            
+            <div class="flex border-b border-gray-200 bg-white rounded-t-2xl px-2 pt-2" style="box-shadow: 0 4px 6px -1px rgba(0,0,0,0.03);">
+                <button id="main-tab-facility" class="main-tab-button active">施設別データ</button>
+                <button id="main-tab-segment" class="main-tab-button">属性別ランキング</button>
+                <button id="main-tab-overall" class="main-tab-button">全体ランキング</button>
+            </div>
+
+            <div class="tifo-card -mt-8 pt-8"> <div id="panel-facility" class="tab-content active space-y-6">
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-xl font-bold" style="color: var(--tifo-primary-dark);">施設別 訪問者データ</h2>
+                        <div class="period-button-group" id="period-selector-facility">
+                            <button class="period-button active" data-period="all" data-target="facility">全期間</button>
+                            <button class="period-button" data-period="1y" data-target="facility">1年</button>
+                            <button class="period-button" data-period="3m" data-target="facility">3か月</button>
+                        </div>
+                    </div>
+                    
+                    <p class="text-gray-600 -mt-4 text-sm">県と施設を選択すると、訪問者の属性TOP10と自由記述コメントが表示されます。</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <select id="pref-filter" class="w-full p-2.5 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-teal-400 focus:border-teal-400">
+                            <option selected value="">県を選択してください...</option>
+                            <option value="富山">富山</option>
+                            <option value="石川">石川</option>
+                            <option value="福井">福井</option>
+                        </select>
+                        <select id="facility-filter" class="w-full p-2.5 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-teal-400 focus:border-teal-400" disabled>
+                            <option selected value="">施設を選択してください...</option>
+                        </select>
+                    </div>
+                    
+                    <div id="facility-detail-wrapper" class="space-y-6 pt-4 border-t border-gray-200">
+                        <div>
+                            <h3 class="text-lg font-semibold mb-3 text-gray-700">訪問者の属性 TOP 10</h3>
+                            <div id="facility-attributes-container" class="custom-scrollbar h-80 overflow-y-auto pr-2 space-y-3">
+                                <p class="text-gray-500 text-center pt-10">はじめに県を選択してください。</p>
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold mb-3 text-gray-700">自由記述コメント (直近3か月)</h3>
+                            <div id="facility-comments-container" class="custom-scrollbar h-80 overflow-y-auto pr-2 space-y-3">
+                                 <p class="text-gray-500 text-center pt-10">施設を選択するとコメントが表示されます。</p>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
-                <div id="ranking-container" class="custom-scrollbar h-96 overflow-y-auto pr-2 space-y-3"></div>
-            </section>
-            <section class="tifo-card">
-                <h2 class="text-xl font-bold mb-4 border-b border-gray-200 pb-3" style="color: var(--tifo-primary-dark);">セグメント別ランキング</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                    <select id="category-filter" class="w-full p-2.5 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-teal-400 focus:border-teal-400">
-                        <option selected value="">分析軸を選択...</option>
-                        <option value="age">年代</option>
-                        <option value="gender">性別</option>
-                        <option value="stay">宿泊数</option>
-                        <option value="companion">同伴者</option>
-                        <option value="purpose">旅の目的</option>
-                        <option value="prefecture">都道府県</option>
-                    </select>
-                    <select id="detail-filter" class="w-full p-2.5 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-teal-400 focus:border-teal-400" disabled>
-                        <option selected value="">詳細を選択...</option>
-                    </select>
+
+                <div id="panel-segment" class="tab-content space-y-6">
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-xl font-bold" style="color: var(--tifo-primary-dark);">セグメント別ランキング</h2>
+                        <div class="period-button-group" id="period-selector-segment">
+                            <button class="period-button active" data-period="all" data-target="segment">全期間</button>
+                            <button class="period-button" data-period="1y" data-target="segment">1年</button>
+                            <button class="period-button" data-period="3m" data-target="segment">3か月</button>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <select id="category-filter" class="w-full p-2.5 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-teal-400 focus:border-teal-400">
+                            <option selected value="">分析軸を選択...</option>
+                            <option value="age">年代</option>
+                            <option value="gender">性別</option>
+                            <option value="stay">宿泊数</option>
+                            <option value="companion">同伴者</option>
+                            <option value="purpose">旅の目的</option>
+                            <option value="prefecture">都道府県</option>
+                        </select>
+                        <select id="detail-filter" class="w-full p-2.5 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-teal-400 focus:border-teal-400" disabled>
+                            <option selected value="">詳細を選択...</option>
+                        </select>
+                    </div>
+                    <div id="segment-ranking-container" class="custom-scrollbar h-96 overflow-y-auto pr-2 space-y-3 pt-4 border-t border-gray-200">
+                         <p class="text-gray-500 text-center pt-10">はじめに分析軸を選択してください。</p>
+                    </div>
                 </div>
-                <div id="segment-ranking-container" class="custom-scrollbar h-96 overflow-y-auto pr-2 space-y-3">
-                     <p class="text-gray-500 text-center pt-10">はじめに分析軸を選択してください。</p>
+
+                <div id="panel-overall" class="tab-content space-y-6">
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-xl font-bold" style="color: var(--tifo-primary-dark);">全体ランキング</h2>
+                         <div class="period-button-group" id="period-selector-overall">
+                            <button class="period-button active" data-period="all" data-target="overall">全期間</button>
+                            <button class="period-button" data-period="1y" data-target="overall">1年</button>
+                            <button class="period-button" data-period="3m" data-target="overall">3か月</button>
+                        </div>
+                    </div>
+                
+                     <div class="flex border-b border-gray-200 -mt-2">
+                        <button id="nps-tab" class="sub-tab-button active">NPS</button>
+                        <button id="satisfaction-tab" class="sub-tab-button">施設全体満足度</button>
+                    </div>
+                    <div id="ranking-container" class="custom-scrollbar h-96 overflow-y-auto pr-2 space-y-3"></div>
                 </div>
-            </section>
+
+            </div>
         </div>
     </main>
 
-    <!-- Footer -->
     <footer class="w-full p-4">
          <div class="text-center">
-            <button id="about-button" class="text-sm text-gray-500 hover:underline">TIFOとは</button>
-        </div>
+             <button id="about-button" class="text-sm text-gray-500 hover:underline">TIFOとは</button>
+         </div>
     </footer>
     
-    <!-- About Modal -->
     <div id="about-modal" class="modal-overlay hidden">
         <div class="modal-content">
             <h2 class="text-2xl font-bold mb-4">TIFOとは</h2>
@@ -235,22 +321,21 @@
         </div>
     </div>
     
-    <!-- Insights Modal -->
-    <div id="insights-modal" class="modal-overlay hidden">
-        <div class="modal-content custom-scrollbar">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-2xl font-bold">Tifoちゃんのつぶやき</h2>
-                <button id="close-insights-modal-button" class="text-gray-400 hover:text-gray-600 text-3xl leading-none">&times;</button>
-            </div>
-            <div id="insights-text" class="markdown-body"></div>
-        </div>
-    </div>
-
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
 
-    let surveyData = [];
+    // --- (NEW) Data Storage ---
+    let allSurveyData = { '3m': [], '1y': [], 'all': [] };
+    let allCommentData = [];
+    let allFacilityLists = { '3m': {}, '1y': {}, 'all': {} };
+    
+    // --- (NEW) Current State ---
+    let currentPeriod = 'all'; // 'all', '1y', '3m'
+    let currentSurveyData = [];
+    let currentFacilityList = {};
+    let currentOverallTab = 'nps'; // 'nps', 'satisfaction'
+
     const loadingIndicator = document.getElementById('loading-indicator');
     const appContainer = document.getElementById('app-container');
 
@@ -263,7 +348,7 @@ document.addEventListener('DOMContentLoaded', () => {
         prefecture: ['北海道','青森県','岩手県','宮城県','秋田県','山形県','福島県','茨城県','栃木県','群馬県','埼玉県','千葉県','東京都','神奈川県','新潟県','富山県','石川県','福井県','山梨県','長野県','岐阜県','静岡県','愛知県','三重県','滋賀県','京都府','大阪府','兵庫県','奈良県','和歌山県','鳥取県','島根県','岡山県','広島県','山口県','徳島県','香川県','愛媛県','高知県','福岡県','佐賀県','長崎県','熊本県','大分県','宮崎県','鹿児島県','沖縄県']
     };
     
-    // --- Function to parse CSV into an array of objects (Robust version) ---
+    // --- Function to parse CSV ---
     const parseCSV = (csvText) => {
         if (csvText.charCodeAt(0) === 0xFEFF) {
             csvText = csvText.slice(1);
@@ -284,14 +369,15 @@ document.addEventListener('DOMContentLoaded', () => {
             return values;
         };
 
-        const headers = parseLine(lines[0]);
+        // (MODIFIED) ヘッダーのカラム名を '回答場所' -> '施設' に統一
+        const headers = parseLine(lines[0]).map(h => h.trim() === '回答場所' ? '施設' : h.trim());
         
         return lines.slice(1).map(line => {
             if (!line.trim()) return null;
             const values = parseLine(line);
             const entry = {};
             headers.forEach((header, index) => {
-                const key = header.trim();
+                const key = header;
                 const rawValue = (values[index] || '').trim();
                 
                 if (rawValue === '') {
@@ -301,107 +387,125 @@ document.addEventListener('DOMContentLoaded', () => {
                     entry[key] = !isNaN(numValue) ? numValue : rawValue;
                 }
             });
+            // TIF列を県列にマッピング (互換性のため)
             if (entry['TIF']) {
                 entry['県'] = entry['TIF'];
                 delete entry['TIF'];
             }
+            // (NEW) '回答場所' があっても '施設' を優先する
+            if (entry['回答場所'] && !entry['施設']) {
+                 entry['施設'] = entry['回答場所'];
+            }
+            
             return entry;
         }).filter(Boolean);
     };
 
-    // --- Function to parse Markdown to HTML (Corrected Version) ---
-    const parseMarkdown = (mdText) => {
-        const lines = mdText.trim().replace(/\r/g, '').split('\n');
-        let html = '';
-        let inList = false;
-
-        const formatInline = (text) => text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-
-        lines.forEach(line => {
-            const trimmedLine = line.trim();
-
-            // Handle lists
-            if (trimmedLine.startsWith('- ')) {
-                if (!inList) {
-                    html += '<ul>';
-                    inList = true;
-                }
-                html += `<li>${formatInline(trimmedLine.substring(2))}</li>`;
-            } else {
-                // If a non-list line is encountered, close the list
-                if (inList) {
-                    html += '</ul>';
-                    inList = false;
-                }
-
-                // Handle other block elements
-                if (trimmedLine.startsWith('# ')) {
-                    html += `<h1>${formatInline(trimmedLine.substring(2))}</h1>`;
-                } else if (trimmedLine.startsWith('## ')) {
-                    html += `<h2>${formatInline(trimmedLine.substring(3))}</h2>`;
-                } else if (trimmedLine.startsWith('### ')) {
-                    html += `<h3>${formatInline(trimmedLine.substring(4))}</h3>`;
-                } else if (trimmedLine.match(/^---\s*$/)) {
-                    html += '<hr>';
-                } else if (trimmedLine.length > 0) {
-                    // This is a paragraph
-                    html += `<p>${formatInline(trimmedLine.replace(/  $/, '<br>'))}</p>`;
-                }
-            }
-        });
-
-        // Close any list that might be open at the end of the file
-        if (inList) {
-            html += '</ul>';
+    // --- (NEW) Function to parse TSV ---
+    const parseTSV = (tsvText) => {
+        if (tsvText.charCodeAt(0) === 0xFEFF) {
+            tsvText = tsvText.slice(1);
         }
+        const lines = tsvText.trim().replace(/\r/g, '').split('\n');
+        if (lines.length < 2) return [];
 
-        return html;
+        const headers = lines[0].split('\t').map(h => h.trim());
+        
+        return lines.slice(1).map(line => {
+            if (!line.trim()) return null;
+            const values = line.split('\t');
+            const entry = {};
+            headers.forEach((header, index) => {
+                const key = header;
+                const rawValue = (values[index] || '').trim();
+                
+                if (rawValue === '') {
+                    entry[key] = null;
+                } else {
+                    // CSVパーサーと同様に、数値は数値として扱う
+                    const numValue = parseFloat(rawValue);
+                    entry[key] = !isNaN(numValue) ? numValue : rawValue;
+                }
+            });
+            return entry;
+        }).filter(Boolean);
     };
 
 
-    // --- Main initialization function ---
+    // --- (MODIFIED) Main initialization function ---
     const initializeApp = async () => {
         try {
-            const response = await fetch('./tif_score.csv');
-            if (!response.ok) {
-                throw new Error(`CSVファイルの読み込みに失敗しました: ${response.statusText}`);
-            }
-            const csvText = await response.text();
-            const allData = parseCSV(csvText);
-            
-            surveyData = allData.filter(item => item['全回答数'] >= 30);
+            const [csvAll, csv1y, csv3m, tsv3m] = await Promise.all([
+                fetch('./tifo_score_all.csv').then(res => res.text()),
+                fetch('./tifo_score_1y.csv').then(res => res.text()),
+                fetch('./tifo_score_3m.csv').then(res => res.text()),
+                fetch('./tifo_complain_3m.tsv').then(res => res.text())
+            ]);
 
-            if (surveyData.length === 0) {
-                 throw new Error('表示対象となるデータ（回答数30件以上）がありません。');
+            allSurveyData['all'] = parseCSV(csvAll).filter(item => item['回答数'] >= 30);
+            allSurveyData['1y'] = parseCSV(csv1y).filter(item => item['回答数'] >= 30);
+            allSurveyData['3m'] = parseCSV(csv3m).filter(item => item['回答数'] >= 30);
+            allCommentData = parseTSV(tsv3m);
+
+            if (allSurveyData['all'].length === 0) {
+                 throw new Error('表示対象となるデータ（全期間）がありません。');
             }
+
+            // (NEW) 施設リストを期間ごとに作成
+            ['all', '1y', '3m'].forEach(period => {
+                const list = { "富山": [], "石川": [], "福井": [] };
+                allSurveyData[period].forEach(item => {
+                    if (list[item['県']] && item['施設']) {
+                        list[item['県']].push(item['施設']);
+                    }
+                });
+                list["富山"].sort();
+                list["石川"].sort();
+                list["福井"].sort();
+                allFacilityLists[period] = list;
+            });
             
+            // (NEW) 初期状態（全期間）を設定
+            currentSurveyData = allSurveyData[currentPeriod];
+            currentFacilityList = allFacilityLists[currentPeriod];
+
             loadingIndicator.classList.add('hidden');
             document.body.classList.remove('overflow-hidden');
             appContainer.classList.remove('hidden');
             setupEventListeners();
+
         } catch (error) {
             loadingIndicator.innerHTML = `<p class="text-red-500 font-bold">エラーが発生しました。</p><p class="text-sm mt-2">${error.message}</p>`;
             console.error(error);
         }
     };
     
-    // --- Function to set up event listeners ---
+    // --- (MODIFIED) Function to set up event listeners ---
     const setupEventListeners = () => {
         const analysisBtn = document.getElementById('analysis-btn');
         const analysisResults = document.getElementById('analysis-results');
         const introSection = document.getElementById('intro-section');
+        
+        const mainTabs = [
+            { btn: document.getElementById('main-tab-facility'), panel: document.getElementById('panel-facility') },
+            { btn: document.getElementById('main-tab-segment'), panel: document.getElementById('panel-segment') },
+            { btn: document.getElementById('main-tab-overall'), panel: document.getElementById('panel-overall') }
+        ];
+
         const npsTab = document.getElementById('nps-tab');
         const satisfactionTab = document.getElementById('satisfaction-tab');
+        
         const categoryFilter = document.getElementById('category-filter');
         const detailFilter = document.getElementById('detail-filter');
+
+        const prefFilter = document.getElementById('pref-filter');
+        const facilityFilter = document.getElementById('facility-filter');
+
         const aboutButton = document.getElementById('about-button');
         const aboutModal = document.getElementById('about-modal');
         const closeAboutModalButton = document.getElementById('close-about-modal-button');
-        const insightsBtn = document.getElementById('insights-btn');
-        const insightsModal = document.getElementById('insights-modal');
-        const closeInsightsModalButton = document.getElementById('close-insights-modal-button');
-        let currentTab = 'nps';
 
+        // --- Analysis Button Listener ---
         analysisBtn.addEventListener('click', () => {
             analysisResults.classList.toggle('hidden');
             if (analysisResults.classList.contains('hidden')) {
@@ -410,13 +514,72 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 introSection.classList.add('mb-8');
                  appContainer.style.justifyContent = 'flex-start';
-                renderSimpleRanking(currentTab);
+                // デフォルトで「全体ランキング」タブがアクティブな場合、描画する
+                 if (document.getElementById('main-tab-overall').classList.contains('active')) {
+                    renderSimpleRanking(currentOverallTab);
+                 }
             }
         });
 
+        // --- Main Tab Listeners ---
+        mainTabs.forEach(tab => {
+            tab.btn.addEventListener('click', () => {
+                mainTabs.forEach(t => {
+                    t.btn.classList.remove('active');
+                    t.panel.classList.remove('active');
+                });
+                tab.btn.classList.add('active');
+                tab.panel.classList.add('active');
+
+                // タブ切り替え時に、そのタブの現在の状態で再描画
+                if (tab.btn.id === 'main-tab-overall') {
+                    renderSimpleRanking(currentOverallTab);
+                } else if (tab.btn.id === 'main-tab-segment') {
+                    renderSegmentRanking();
+                } else if (tab.btn.id === 'main-tab-facility') {
+                    renderFacilityDetail(facilityFilter.value);
+                }
+            });
+        });
+
+        // --- (NEW) Period Selector Listeners ---
+        document.querySelectorAll('.period-button').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const newPeriod = e.target.dataset.period;
+                const targetPanel = e.target.dataset.target; // 'facility', 'segment', 'overall'
+                
+                // 既にアクティブなら何もしない
+                if (e.target.classList.contains('active')) return;
+                
+                currentPeriod = newPeriod;
+                currentSurveyData = allSurveyData[currentPeriod];
+                currentFacilityList = allFacilityLists[currentPeriod];
+
+                // 1. 押されたボタンのグループ内でアクティブ状態を切り替え
+                const buttonGroup = e.target.closest('.period-button-group');
+                buttonGroup.querySelectorAll('.period-button').forEach(btn => btn.classList.remove('active'));
+                e.target.classList.add('active');
+
+                // 2. 該当するパネルの表示を更新
+                if (targetPanel === 'overall') {
+                    renderSimpleRanking(currentOverallTab);
+                } 
+                else if (targetPanel === 'segment') {
+                    // セグメントランキングはフィルター状態を維持して再描画
+                    renderSegmentRanking();
+                } 
+                else if (targetPanel === 'facility') {
+                    // 施設別タブは、県選択と施設選択の状態をリセット（期間によって施設リストが変わるため）
+                    resetFacilityFilters();
+                }
+            });
+        });
+
+
+        // --- Overall Ranking Sub-Tab Listeners ---
         npsTab.addEventListener('click', () => {
-            if (currentTab !== 'nps') {
-                currentTab = 'nps';
+            if (currentOverallTab !== 'nps') {
+                currentOverallTab = 'nps';
                 npsTab.classList.add('active');
                 satisfactionTab.classList.remove('active');
                 renderSimpleRanking('nps');
@@ -424,14 +587,15 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         satisfactionTab.addEventListener('click', () => {
-            if (currentTab !== 'satisfaction') {
-                currentTab = 'satisfaction';
+            if (currentOverallTab !== 'satisfaction') {
+                currentOverallTab = 'satisfaction';
                 satisfactionTab.classList.add('active');
                 npsTab.classList.remove('active');
                 renderSimpleRanking('satisfaction');
             }
         });
         
+        // --- Segment Ranking Filter Listeners ---
         categoryFilter.addEventListener('change', () => {
             const selectedCategory = categoryFilter.value;
             detailFilter.innerHTML = '<option selected value="">詳細を選択...</option>';
@@ -452,8 +616,45 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         
         detailFilter.addEventListener('change', renderSegmentRanking);
+
+        // --- (MODIFIED) Facility Detail Filter Listeners ---
+        const resetFacilityFilters = () => {
+            prefFilter.value = "";
+            facilityFilter.innerHTML = '<option selected value="">施設を選択してください...</option>';
+            facilityFilter.disabled = true;
+            document.getElementById('facility-attributes-container').innerHTML = '<p class="text-gray-500 text-center pt-10">はじめに県を選択してください。</p>';
+            document.getElementById('facility-comments-container').innerHTML = '<p class="text-gray-500 text-center pt-10">施設を選択するとコメントが表示されます。</p>';
+        };
+
+        prefFilter.addEventListener('change', () => {
+            const selectedPref = prefFilter.value;
+            facilityFilter.innerHTML = '<option selected value="">施設を選択してください...</option>';
+            // 描画エリアをリセット
+            document.getElementById('facility-attributes-container').innerHTML = '<p class="text-gray-500 text-center pt-10">次に施設を選択してください。</p>';
+            document.getElementById('facility-comments-container').innerHTML = '<p class="text-gray-500 text-center pt-10"></p>';
+
+
+            if (selectedPref && currentFacilityList[selectedPref]) {
+                currentFacilityList[selectedPref].forEach(facilityName => {
+                    const optionElement = document.createElement('option');
+                    optionElement.value = facilityName;
+                    optionElement.textContent = facilityName;
+                    facilityFilter.appendChild(optionElement);
+                });
+                facilityFilter.disabled = false;
+            } else {
+                facilityFilter.disabled = true;
+                if (!selectedPref) {
+                    resetFacilityFilters();
+                }
+            }
+        });
+
+        facilityFilter.addEventListener('change', () => {
+            renderFacilityDetail(facilityFilter.value);
+        });
         
-        // --- Modal Listeners ---
+        // --- Modal Listeners (About only) ---
         aboutButton.addEventListener('click', async () => {
             try {
                 const response = await fetch('./aboutus.txt');
@@ -468,25 +669,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         closeAboutModalButton.addEventListener('click', () => aboutModal.classList.add('hidden'));
         aboutModal.addEventListener('click', (e) => { if(e.target === aboutModal) aboutModal.classList.add('hidden'); });
-
-        insightsBtn.addEventListener('click', async () => {
-            try {
-                const response = await fetch('./tifo_insights.md');
-                if (!response.ok) throw new Error('File not found');
-                const mdText = await response.text();
-                document.getElementById('insights-text').innerHTML = parseMarkdown(mdText);
-                insightsModal.classList.remove('hidden');
-            } catch(e) {
-                document.getElementById('insights-text').textContent = 'ファイルが読み込めませんでした。';
-                insightsModal.classList.remove('hidden');
-            }
-        });
-        closeInsightsModalButton.addEventListener('click', () => insightsModal.classList.add('hidden'));
-        insightsModal.addEventListener('click', (e) => { if(e.target === insightsModal) insightsModal.classList.add('hidden'); });
     };
 
-    // --- Ranking Card Drawing Function ---
-    const createRankingCard = (rank, name, score, prefecture, unit = '') => {
+    // --- (MODIFIED) Ranking Card Drawing Function ---
+    const createRankingCard = (rank, name, score, detailOrPref, unit = '') => {
         let rankClass = 'rank-default';
         if (rank === 1) rankClass = 'rank-1';
         if (rank === 2) rankClass = 'rank-2';
@@ -497,8 +683,15 @@ document.addEventListener('DOMContentLoaded', () => {
             "石川": "pref-ishikawa",
             "福井": "pref-fukui",
         };
-        const prefClass = prefectureClasses[prefecture] || 'bg-gray-200 text-gray-800';
-        const prefBadge = `<span class="pref-badge ${prefClass}">${prefecture}</span>`;
+        
+        let badgeHtml = '';
+        if (prefectureClasses[detailOrPref]) {
+            const prefClass = prefectureClasses[detailOrPref];
+            badgeHtml = `<span class="pref-badge ${prefClass}">${detailOrPref}</span>`;
+        } else {
+            // 属性バッジ
+            badgeHtml = `<span class="pref-badge bg-gray-200 text-gray-700">${detailOrPref}</span>`;
+        }
         
         const scoreDisplay = (typeof score === 'number')
             ? (unit === '点' ? score.toFixed(2) : score.toFixed(1))
@@ -507,12 +700,49 @@ document.addEventListener('DOMContentLoaded', () => {
         return `
             <div class="flex items-center bg-white p-3 rounded-xl border border-gray-200 shadow-sm">
                 <div class="rank-badge ${rankClass}">${rank}</div>
-                <div class="flex-grow ml-4">
-                    <p class="font-semibold text-gray-700">${name}</p>
-                    <div class="mt-1">${prefBadge}</div>
+                <div class="flex-grow ml-4 min-w-0"> <p class="font-semibold text-gray-700 truncate" title="${name}">${name}</p>
+                    <div class="mt-1">${badgeHtml}</div>
                 </div>
-                <div class="text-right">
+                <div class="text-right flex-shrink-0 ml-2">
                     <p class="text-2xl font-bold" style="color: var(--tifo-primary-dark);">${scoreDisplay}<span class="text-sm text-gray-500 ml-1">${unit}</span></p>
+                </div>
+            </div>
+        `;
+    };
+
+    // --- (NEW) Comment Card Drawing Function ---
+    const createCommentCard = (comment) => {
+        const stars = (rating) => {
+            let s = '';
+            const r = rating ? Math.round(rating) : 0;
+            for(let i=1; i<=5; i++) {
+                s += (i <= r) ? '★' : '☆';
+            }
+            return s;
+        };
+        
+        const satisfaction = comment['満足度（旅行全体）'];
+        const nps = comment['おすすめ度'];
+        
+        let npsColor = 'text-gray-600';
+        if (nps >= 9) npsColor = 'text-green-600 font-bold';
+        else if (nps <= 6) npsColor = 'text-red-600 font-bold';
+        else if (nps >= 7) npsColor = 'text-yellow-600 font-bold';
+
+        const date = comment['アンケート回答日'] ? comment['アンケート回答日'].split(' ')[0] : '';
+
+        return `
+            <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm space-y-2">
+                <p class="font-semibold text-gray-800">${comment['満足度理由'] || '(コメントなし)'}</p>
+                <div class="flex items-center justify-between text-sm text-gray-500 flex-wrap gap-y-1">
+                    <div class="flex items-center space-x-3">
+                        <span class="font-bold ${satisfaction ? 'text-yellow-500' : ''}">${satisfaction ? stars(satisfaction) : '満足度: -'}</span>
+                        <span class="${npsColor}">推奨度: ${nps !== null ? nps : '-'}</span>
+                    </div>
+                    <div class="text-right">
+                        <span>${comment['年代'] || ''} ${comment['性別'] || ''}</span>
+                        <span class="ml-3">${date}</span>
+                    </div>
                 </div>
             </div>
         `;
@@ -524,11 +754,18 @@ document.addEventListener('DOMContentLoaded', () => {
         return Math.abs(value) <= 1 ? value * 100 : value;
     };
 
+    // (MODIFIED)
     const renderSimpleRanking = (type) => {
         const rankingContainer = document.getElementById('ranking-container');
+        // (MODIFIED) currentSurveyData を使用
+        if (currentSurveyData.length === 0) {
+            rankingContainer.innerHTML = `<p class="text-gray-500 text-center pt-10">この期間のデータはありません。</p>`;
+            return;
+        }
+
         const sortKey = type === 'nps' ? 'NPS' : '施設全体満足度';
 
-        const sortedData = [...surveyData].sort((a, b) => {
+        const sortedData = [...currentSurveyData].sort((a, b) => {
             const valA = type === 'nps' ? getSortableNPS(a[sortKey]) : (a[sortKey] || -Infinity);
             const valB = type === 'nps' ? getSortableNPS(b[sortKey]) : (b[sortKey] || -Infinity);
             return valB - valA;
@@ -543,16 +780,23 @@ document.addEventListener('DOMContentLoaded', () => {
             .join('');
     };
 
+    // (MODIFIED)
     const renderSegmentRanking = () => {
         const segmentRankingContainer = document.getElementById('segment-ranking-container');
         const filterValue = document.getElementById('detail-filter').value;
+        
+        // (MODIFIED) currentSurveyData を使用
+        if (currentSurveyData.length === 0) {
+            segmentRankingContainer.innerHTML = `<p class="text-gray-500 text-center pt-10">この期間のデータはありません。</p>`;
+            return;
+        }
 
         if (!filterValue) {
             segmentRankingContainer.innerHTML = '<p class="text-gray-500 text-center pt-10">詳細を選択してください。</p>';
             return;
         }
 
-        const calculatedData = surveyData.map(item => {
+        const calculatedData = currentSurveyData.map(item => {
             const segmentValue = item[filterValue];
             const percentage = (typeof segmentValue === 'number') ? segmentValue * 100 : -1;
             return { ...item, percentage: percentage };
@@ -565,6 +809,71 @@ document.addEventListener('DOMContentLoaded', () => {
             })
             .join('');
     };
+
+    // --- (MODIFIED) Render Facility Detail Function ---
+    const renderFacilityDetail = (facilityName) => {
+        const attributesContainer = document.getElementById('facility-attributes-container');
+        const commentsContainer = document.getElementById('facility-comments-container');
+
+        if (!facilityName) {
+            attributesContainer.innerHTML = '<p class="text-gray-500 text-center pt-10">施設を選択してください。</p>';
+            commentsContainer.innerHTML = '<p class="text-gray-500 text-center pt-10"></p>';
+            return;
+        }
+
+        // (MODIFIED) currentSurveyData を使用
+        const facilityData = currentSurveyData.find(item => item['施設'] === facilityName);
+        
+        // --- 1. 属性TOP10の描画 ---
+        if (!facilityData) {
+            attributesContainer.innerHTML = '<p class="text-red-500 text-center pt-10">この期間の属性データが見つかりません。</p>';
+        } else {
+            let segments = [];
+            for (const category in filterOptions) {
+                filterOptions[category].forEach(option => {
+                    if (facilityData.hasOwnProperty(option)) {
+                        const value = facilityData[option];
+                        if (typeof value === 'number') {
+                            segments.push({ name: option, percentage: value * 100, category: category }); // (カテゴリ情報も追加)
+                        }
+                    }
+                });
+            }
+            segments.sort((a, b) => b.percentage - a.percentage);
+            const top10Segments = segments.slice(0, 10);
+
+            if (top10Segments.length === 0) {
+                attributesContainer.innerHTML = '<p class="text-gray-500 text-center pt-10">この施設の詳細な属性データはありません。</p>';
+            } else {
+                attributesContainer.innerHTML = top10Segments
+                    .map((item, index) => {
+                        // detailOrPref にカテゴリ名を入れると '年代' などが表示されるが、ここでは属性名(item.name)を使う
+                        return createRankingCard(index + 1, item.name, item.percentage, item.name, '%');
+                    })
+                    .join('');
+            }
+        }
+
+        // --- 2. 自由記述コメントの描画 (allCommentData から) ---
+        // (注意: コメントは tifo_complain_3m.tsv のみ)
+        const comments = allCommentData.filter(comment => comment['回答場所'] === facilityName);
+        
+        if (comments.length === 0) {
+            commentsContainer.innerHTML = '<p class="text-gray-500 text-center pt-10">この施設のコメントはありません。</p>';
+        } else {
+            // 新しい順にソート (日付文字列をパースする必要がある)
+            comments.sort((a, b) => {
+                const dateA = new Date(a['アンケート回答日'] || 0);
+                const dateB = new Date(b['アンケート回答日'] || 0);
+                return dateB - dateA;
+            });
+            
+            commentsContainer.innerHTML = comments
+                .map(comment => createCommentCard(comment))
+                .join('');
+        }
+    };
+
 
     // --- Start the application ---
     initializeApp();
