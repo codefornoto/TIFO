@@ -397,8 +397,9 @@ document.addEventListener('DOMContentLoaded', () => {
         'income': { title: '世帯年収', columns: filterOptions.income, container: document.getElementById('attr-income') }
     };
     
-    // --- Function to parse CSV ---
-    const parseCSV = (csvText) => {
+    // --- (MODIFIED) Function to parse CSV ---
+    // (MODIFIED) マスタを受け取る
+    const parseCSV = (csvText, facilityPrefMaster) => {
         if (csvText.charCodeAt(0) === 0xFEFF) {
             csvText = csvText.slice(1);
         }
@@ -418,6 +419,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return values;
         };
 
+        // (MODIFIED) ヘッダーの正規化（'回答場所' -> '施設' のみ）
         const headers = parseLine(lines[0]).map(h => h.trim() === '回答場所' ? '施設' : h.trim());
         
         return lines.slice(1).map(line => {
@@ -425,7 +427,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const values = parseLine(line);
             const entry = {};
             headers.forEach((header, index) => {
-                const key = header;
+                const key = header; // (MODIFIED) 県の正規化を削除
                 const rawValue = (values[index] || '').trim();
                 
                 if (rawValue === '') {
@@ -435,12 +437,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     entry[key] = !isNaN(numValue) ? numValue : rawValue;
                 }
             });
-            if (entry['TIF']) {
-                entry['県'] = entry['TIF'];
-                delete entry['TIF'];
-            }
-            if (entry['回答場所'] && !entry['施設']) {
-                 entry['施設'] = entry['回答場所'];
+            
+            // (NEW) マスタから県情報を付与
+            if (entry['施設'] && facilityPrefMaster[entry['施設']]) {
+                entry['県'] = facilityPrefMaster[entry['施設']];
+            } else {
+                // マスタにない場合 (CSVに '県' カラムがあればそれを使う、なければ null)
+                entry['県'] = entry['県'] || null; 
             }
             
             return entry;
@@ -480,18 +483,30 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- (MODIFIED) Main initialization function ---
     const initializeApp = async () => {
         try {
-            const [csvAll, csv1y, csv3m, tsv3m] = await Promise.all([
+            // (MODIFIED) TSVを先に読み込む
+            const tsv3m = await fetch('./tifo_complain_3m.tsv').then(res => res.text());
+            allCommentData = parseTSV(tsv3m);
+
+            // (NEW) 回答場所と県の対応マスタを作成
+            const facilityPrefMaster = {};
+            allCommentData.forEach(comment => {
+                const facility = comment['回答場所'];
+                const pref = comment['対象県（富山/石川/福井）'];
+                if (facility && pref && !facilityPrefMaster[facility]) {
+                    facilityPrefMaster[facility] = pref;
+                }
+            });
+            
+            // (MODIFIED) CSV読み込み（マスタを渡す）
+            const [csvAll, csv1y, csv3m] = await Promise.all([
                 fetch('./tifo_score_all.csv').then(res => res.text()),
                 fetch('./tifo_score_1y.csv').then(res => res.text()),
-                fetch('./tifo_score_3m.csv').then(res => res.text()),
-                fetch('./tifo_complain_3m.tsv').then(res => res.text())
+                fetch('./tifo_score_3m.csv').then(res => res.text())
             ]);
 
-            // 回答数30件未満も読み込む（県別フィルタのため）
-            allSurveyData['all'] = parseCSV(csvAll);
-            allSurveyData['1y'] = parseCSV(csv1y);
-            allSurveyData['3m'] = parseCSV(csv3m);
-            allCommentData = parseTSV(tsv3m);
+            allSurveyData['all'] = parseCSV(csvAll, facilityPrefMaster);
+            allSurveyData['1y'] = parseCSV(csv1y, facilityPrefMaster);
+            allSurveyData['3m'] = parseCSV(csv3m, facilityPrefMaster);
 
             if (allSurveyData['all'].length === 0) {
                  throw new Error('表示対象となるデータ（全期間）がありません。');
@@ -504,7 +519,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const filteredData = allSurveyData[period].filter(item => item['回答数'] >= 30);
                 
                 filteredData.forEach(item => {
-                    if (list[item['県']] && item['施設']) {
+                    // (MODIFIED) item['県'] がマスタによって正しく設定されている前提
+                    if (item['県'] && list[item['県']] && item['施設']) {
                         list[item['県']].push(item['施設']);
                     }
                 });
@@ -524,7 +540,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // (NEW) 初期表示
             updateFacilityFilter();
-            renderSimpleRanking(currentOverallTab); // デフォルトタブ（施設別）ではないが、裏で描画しておく
+            // renderSimpleRanking(currentOverallTab); // analysisBtnクリック時に描画されるので不要
 
         } catch (error) {
             loadingIndicator.innerHTML = `<p class="text-red-500 font-bold">エラーが発生しました。</p><p class="text-sm mt-2">${error.message}</p>`;
@@ -563,6 +579,11 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('facility-scores').classList.add('hidden');
         document.getElementById('facility-detail-wrapper').classList.add('hidden');
         document.getElementById('facility-prompt').classList.remove('hidden');
+        document.getElementById('facility-prompt').innerHTML = '<p class="text-gray-500 text-center pt-10">施設を選択してください。</p>';
+        // 施設リストが空の場合のメッセージ
+        if (currentFacilityList.length === 0) {
+            document.getElementById('facility-prompt').innerHTML = `<p class="text-gray-500 text-center pt-10">${currentPref}にはこの期間のデータがありません。</p>`;
+        }
     };
     
     // --- (MODIFIED) Function to set up event listeners ---
@@ -864,9 +885,6 @@ document.addEventListener('DOMContentLoaded', () => {
             .map((item, index) => {
                 const scoreValue = item[sortKey];
                 const score = type === 'nps' ? getSortableNPS(scoreValue) : scoreValue;
-                // createRankingCard の detailOrPref には県名（currentPref）を入れるが、
-                // このランキングは既に県で絞られているため、バッジは不要かもしれない。
-                // だが、createRankingCard が県バッジを前提にしているので、そのまま県名を入れる。
                 return createRankingCard(index + 1, item['施設'], score, item['県'], type === 'satisfaction' ? '点' : '');
             })
             .join('');
