@@ -3,13 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TIFO - 北陸３県観光データ猫型アドバイザリー</title>
-    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>TIFO - 北陸３県観光データ猫型アドバイザリー</title> <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="defalt">
-    <link rel="icon" href="./favicon.ico">
-    <link rel="apple-touch-icon" href="./tifo.png">
-    <link rel="manifest" href="./manifest.json">
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" href="./favicon.ico"> <link rel="apple-touch-icon" href="./tifo.png"> <link rel="manifest" href="./manifest.json"> <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
@@ -65,7 +61,7 @@
 
     <main id="app-container" class="container mx-auto p-4 md:p-8 max-w-4xl hidden">
         <div id="intro-section">
-            <header class="flex items-center justify-center gap-4 mb-4 text-center"> <a href="https://codefornoto.github.io/TIFO/" target="_blank" rel="noopener noreferrer"> <div class="w-24 h-24"> <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"> <path fill="var(--tifo-primary)" d="M47.9,-51.9C62.4,-41.2,74.7,-25.9,78.2,-8.1C81.7,9.7,76.4,30.1,64.8,44.2C53.2,58.3,35.3,66.1,17.7,70.8C0.1,75.5,-17.2,77.1,-33.1,70.2C-49,63.3,-63.5,47.9,-71.4,30.1C-79.3,12.3,-80.6,-7.8,-74.3,-24.1C-68,-40.4,-54.1,-52.9,-38.8,-60.1C-23.5,-67.3,-6.8,-69.2,8.9,-66.1C24.6,-63,47.9,-51.9,47.9,-51.9Z" transform="translate(100 100)"></path> <text x="50%" y="55%" text-anchor="middle" dominant-baseline="middle" font-size="50" font-weight="bold" fill="white" letter-spacing="2">TIFO</text> </svg> </div> </a> <img src="tifo.png" alt="TIFOちゃん" class="h-20 w-20 object-contain"> </header>
+             <header class="flex items-center justify-center gap-4 mb-4 text-center"> <a href="https://codefornoto.github.io/TIFO/" target="_blank" rel="noopener noreferrer"> <div class="w-24 h-24"> <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"> <path fill="var(--tifo-primary)" d="M47.9,-51.9C62.4,-41.2,74.7,-25.9,78.2,-8.1C81.7,9.7,76.4,30.1,64.8,44.2C53.2,58.3,35.3,66.1,17.7,70.8C0.1,75.5,-17.2,77.1,-33.1,70.2C-49,63.3,-63.5,47.9,-71.4,30.1C-79.3,12.3,-80.6,-7.8,-74.3,-24.1C-68,-40.4,-54.1,-52.9,-38.8,-60.1C-23.5,-67.3,-6.8,-69.2,8.9,-66.1C24.6,-63,47.9,-51.9,47.9,-51.9Z" transform="translate(100 100)"></path> <text x="50%" y="55%" text-anchor="middle" dominant-baseline="middle" font-size="50" font-weight="bold" fill="white" letter-spacing="2">TIFO</text> </svg> </div> </a> <img src="tifo.png" alt="TIFOちゃん" class="h-20 w-20 object-contain"> </header>
             <p class="text-lg text-gray-600 mb-8 text-center">北陸３県観光データ猫型アドバイザリー</p>
             <section class="text-center mb-8 space-y-4"> <button id="analysis-btn" class="tifo-button text-lg px-8">北陸３県連携データ分析</button> </section>
         </div>
@@ -91,15 +87,14 @@
                                 <div class="tifo-card !shadow-none border p-4"><h4 class="text-md font-bold mb-3">宿泊数</h4><ul id="attr-stay" class="space-y-2"></ul></div>
                             </div>
                         </div>
-                        <div>
-                            <h3 class="text-lg font-semibold mb-3 text-gray-700">自由記述コメント (直近3か月)</h3>
-                            <div id="facility-comments-container" class="custom-scrollbar h-80 overflow-y-auto pr-2 space-y-3"> <p class="text-gray-500 text-center pt-10">施設を選択するとコメントが表示されます。</p> </div>
+                        <div id="ishikawa-detail-link-container" class="text-center mt-6 hidden">
+                             <a href="https://codefornoto.github.io/TIFO/ishikawa/" target="_blank" rel="noopener noreferrer" class="tifo-button inline-block">詳細な分析はこちら</a>
                         </div>
                     </div>
                     <div id="facility-prompt" class="pt-10"><p class="text-gray-500 text-center">施設・エリアを選択してください。</p></div>
                 </div>
-                <div id="panel-segment" class="tab-content space-y-6"> <div class="flex justify-between items-center"> <h2 class="text-xl font-bold" style="color: var(--tifo-primary-dark);">セグメント別ランキング</h2> <div class="period-button-group" id="period-selector-segment"> <button class="period-button active" data-period="all" data-target="segment">全期間</button> <button class="period-button" data-period="1y" data-target="segment">1年</button> <button class="period-button" data-period="3m" data-target="segment">3か月</button> </div> </div> <div class="grid grid-cols-1 md:grid-cols-2 gap-4"> <select id="category-filter" class="w-full p-2.5 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-teal-400 focus:border-teal-400"> <option selected value="">分析軸を選択...</option> <option value="age">年代</option><option value="gender">性別</option><option value="stay">宿泊数</option><option value="companion">同伴者</option><option value="purpose">旅の目的</option><option value="prefecture">都道府県</option><option value="source">情報源</option><option value="income">世帯年収</option> </select> <select id="detail-filter" class="w-full p-2.5 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-teal-400 focus:border-teal-400" disabled> <option selected value="">詳細を選択...</option> </select> </div> <div id="segment-ranking-container" class="custom-scrollbar h-96 overflow-y-auto pr-2 space-y-3 pt-4 border-t border-gray-200"><p class="text-gray-500 text-center pt-10">はじめに分析軸を選択してください。</p></div> </div>
-                <div id="panel-overall" class="tab-content space-y-6"> <div class="flex justify-between items-center"> <h2 class="text-xl font-bold" style="color: var(--tifo-primary-dark);">全体ランキング</h2> <div class="period-button-group" id="period-selector-overall"> <button class="period-button active" data-period="all" data-target="overall">全期間</button> <button class="period-button" data-period="1y" data-target="overall">1年</button> <button class="period-button" data-period="3m" data-target="overall">3か月</button> </div> </div> <div class="flex border-b border-gray-200 -mt-2"> <button id="nps-tab" class="sub-tab-button active">NPS</button> <button id="satisfaction-tab" class="sub-tab-button">満足度(旅行全体)</button> </div> <div id="ranking-container" class="custom-scrollbar h-96 overflow-y-auto pr-2 space-y-3"></div> </div>
+                <div id="panel-segment" class="tab-content space-y-6"> <div class="flex justify-between items-center"> <h2 class="text-xl font-bold" style="color: var(--tifo-primary-dark);">セグメント別ランキング (３県混合)</h2> <div class="period-button-group" id="period-selector-segment"> <button class="period-button active" data-period="all" data-target="segment">全期間</button> <button class="period-button" data-period="1y" data-target="segment">1年</button> <button class="period-button" data-period="3m" data-target="segment">3か月</button> </div> </div> <div class="grid grid-cols-1 md:grid-cols-2 gap-4"> <select id="category-filter" class="w-full p-2.5 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-teal-400 focus:border-teal-400"> <option selected value="">分析軸を選択...</option> <option value="age">年代</option><option value="gender">性別</option><option value="stay">宿泊数</option><option value="companion">同伴者</option><option value="purpose">旅の目的</option><option value="prefecture">都道府県</option><option value="source">情報源</option><option value="income">世帯年収</option> </select> <select id="detail-filter" class="w-full p-2.5 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-teal-400 focus:border-teal-400" disabled> <option selected value="">詳細を選択...</option> </select> </div> <div id="segment-ranking-container" class="custom-scrollbar h-96 overflow-y-auto pr-2 space-y-3 pt-4 border-t border-gray-200"><p class="text-gray-500 text-center pt-10">はじめに分析軸を選択してください。</p></div> </div>
+                <div id="panel-overall" class="tab-content space-y-6"> <div class="flex justify-between items-center"> <h2 class="text-xl font-bold" style="color: var(--tifo-primary-dark);">全体ランキング (３県混合)</h2> <div class="period-button-group" id="period-selector-overall"> <button class="period-button active" data-period="all" data-target="overall">全期間</button> <button class="period-button" data-period="1y" data-target="overall">1年</button> <button class="period-button" data-period="3m" data-target="overall">3か月</button> </div> </div> <div class="flex border-b border-gray-200 -mt-2"> <button id="nps-tab" class="sub-tab-button active">NPS</button> <button id="satisfaction-tab" class="sub-tab-button">満足度(旅行全体)</button> </div> <div id="ranking-container" class="custom-scrollbar h-96 overflow-y-auto pr-2 space-y-3"></div> </div>
             </div>
         </div>
     </main>
@@ -111,7 +106,7 @@
 document.addEventListener('DOMContentLoaded', () => {
 
     let allSurveyData = { '3m': [], '1y': [], 'all': [] };
-    let allCommentData = [];
+    // let allCommentData = []; // Removed
     let allFacilityLists = { '3m': {}, '1y': {}, 'all': {} };
     let currentPeriod = 'all';
     let currentPref = '富山'; // Facility tab specific state
@@ -125,55 +120,24 @@ document.addEventListener('DOMContentLoaded', () => {
     const filterOptions = { /* 省略 */
         age: ['10代','20代','30代','40代','50代','60代','70代','80代','90代','100代'], gender: ['男', '女'], stay: ['日帰り', '1泊', '2泊', '3泊', '4泊以上'], companion: ['自分ひとり','恋人','友人','夫婦2人','団体旅行','親戚','親','職場の同僚','小学生以下連れの家族','中学生以下連れの家族','高校生連れの家族','災害支援'], purpose: ['宿でのんびり過ごす','温泉や露天風呂','地元の美味しいものを食べる','花見や紅葉などの自然鑑賞','名所、旧跡の観光','テーマパーク（遊園地、動物園、博物館など）','買い物、アウトレット','お祭りやイベントへの参加・見物','スポーツ観戦や芸能鑑賞（コンサート等）','アウトドア（海水浴、釣り、登山など）','まちあるき、都市散策','各種体験（手作り、果物狩りなど）','スキー・スノボ、マリンスポーツ','その他スポーツ（ゴルフ、テニスなど）','ドライブ・ツーリング','友人・親戚を尋ねる','出張など仕事関係'], prefecture: ['北海道','青森県','岩手県','宮城県','秋田県','山形県','福島県','茨城県','栃木県','群馬県','埼玉県','千葉県','東京都','神奈川県','新潟県','富山県','石川県','福井県','山梨県','長野県','岐阜県','静岡県','愛知県','三重県','滋賀県','京都府','大阪府','兵庫県','奈良県','和歌山県','鳥取県','島根県','岡山県','広島県','山口県','徳島県','香川県','愛媛県','高知県','福岡県','佐賀県','長崎県','熊本県','大分県','宮崎県','鹿児島県','沖縄県'], source: ['Facebook','Google','Googleマップ','Instagram','TikTok','X（旧Twitter）','YouTube','SNS広告','ブログ','まとめサイト','インターネット・アプリ','デジタルニュース','宿泊予約Webサイト','宿泊施設','TV・ラジオ番組やCM','ラブライブのスタンプラリー','新聞・雑誌・ガイドブック','旅行会社','友人・知人','地元の人','観光パンフレット・ポスター','観光案内所','観光展・物産展','観光連盟やDMOのHP','その他'], income: ['100万円未満', '100万円以上 200万円未満', '200万円以上 300万円未満', '300万円以上 400万円未満', '400万円以上 500万円未満', '500万円以上 600万円未満', '600万円以上 700万円未満', '700万円以上 800万円未満', '800万円以上 900万円未満', '900万円以上 1,000万円未満', '1,000万円以上 1,200万円未満', '1,200万円以上 1,500万円未満', '1,500万円以上', '分からない/無回答']
     };
-    // (MODIFIED) Added companion and stay to facility attributes
-    const facilityAttributeCategories = {
-        'age': { title: '年代', columns: filterOptions.age, container: document.getElementById('attr-age') },
-        'gender': { title: '性別', columns: filterOptions.gender, container: document.getElementById('attr-gender') },
-        'prefecture': { title: '都道府県', columns: filterOptions.prefecture, container: document.getElementById('attr-prefecture') },
-        'purpose': { title: '旅の目的', columns: filterOptions.purpose, container: document.getElementById('attr-purpose') },
-        'source': { title: '情報源', columns: filterOptions.source, container: document.getElementById('attr-source') },
-        'income': { title: '世帯年収', columns: filterOptions.income, container: document.getElementById('attr-income') },
-        'companion': { title: '同伴者', columns: filterOptions.companion, container: document.getElementById('attr-companion') }, // NEW
-        'stay': { title: '宿泊数', columns: filterOptions.stay, container: document.getElementById('attr-stay') } // NEW
+    const facilityAttributeCategories = { /* 省略 */
+        'age': { title: '年代', columns: filterOptions.age, container: document.getElementById('attr-age') }, 'gender': { title: '性別', columns: filterOptions.gender, container: document.getElementById('attr-gender') }, 'prefecture': { title: '都道府県', columns: filterOptions.prefecture, container: document.getElementById('attr-prefecture') }, 'purpose': { title: '旅の目的', columns: filterOptions.purpose, container: document.getElementById('attr-purpose') }, 'source': { title: '情報源', columns: filterOptions.source, container: document.getElementById('attr-source') }, 'income': { title: '世帯年収', columns: filterOptions.income, container: document.getElementById('attr-income') }, 'companion': { title: '同伴者', columns: filterOptions.companion, container: document.getElementById('attr-companion') }, 'stay': { title: '宿泊数', columns: filterOptions.stay, container: document.getElementById('attr-stay') }
     };
 
     // (MODIFIED) parseCSV reverts to reading 'TIF' column for prefecture
-    const parseCSV = (csvText) => {
-        if (csvText.charCodeAt(0) === 0xFEFF) csvText = csvText.slice(1);
-        const lines = csvText.trim().replace(/\r/g, '').split('\n');
-        if (lines.length < 2) return [];
-        const csvRegex = /(?:^|,)(?:"([^"]*(?:""[^"]*)*)"|([^,]*))/g;
-        const parseLine = (line) => { const values = []; let match; csvRegex.lastIndex = 0; while (match = csvRegex.exec(line)) values.push(match[1] ? match[1].replace(/""/g, '"') : match[2]); return values; };
-        // Read headers, normalize '回答場所' to '施設'
-        const headers = parseLine(lines[0]).map(h => h.trim() === '回答場所' ? '施設' : h.trim());
-        return lines.slice(1).map(line => {
-            if (!line.trim()) return null;
-            const values = parseLine(line); const entry = {};
-            headers.forEach((header, index) => {
-                const key = header; // Use header name directly
-                const rawValue = (values[index] || '').trim();
-                if (rawValue === '') entry[key] = null;
-                else { const numValue = parseFloat(rawValue); entry[key] = !isNaN(numValue) ? numValue : rawValue; }
-            });
-            // (MODIFIED) Set '県' based on 'TIF' column, default to null if not found
-            entry['県'] = entry['TIF'] || null;
-            return entry;
-        }).filter(Boolean);
+    const parseCSV = (csvText) => { /* 省略 */
+        if (csvText.charCodeAt(0) === 0xFEFF) csvText = csvText.slice(1); const lines = csvText.trim().replace(/\r/g, '').split('\n'); if (lines.length < 2) return []; const csvRegex = /(?:^|,)(?:"([^"]*(?:""[^"]*)*)"|([^,]*))/g; const parseLine = (line) => { const values = []; let match; csvRegex.lastIndex = 0; while (match = csvRegex.exec(line)) values.push(match[1] ? match[1].replace(/""/g, '"') : match[2]); return values; }; const headers = parseLine(lines[0]).map(h => h.trim() === '回答場所' ? '施設' : h.trim()); return lines.slice(1).map(line => { if (!line.trim()) return null; const values = parseLine(line); const entry = {}; headers.forEach((header, index) => { const key = header; const rawValue = (values[index] || '').trim(); if (rawValue === '') entry[key] = null; else { const numValue = parseFloat(rawValue); entry[key] = !isNaN(numValue) ? numValue : rawValue; } }); entry['県'] = entry['TIF'] || null; return entry; }).filter(Boolean);
     };
 
-    const parseTSV = (tsvText) => { /* 省略 */
-        if (tsvText.charCodeAt(0) === 0xFEFF) tsvText = tsvText.slice(1); const lines = tsvText.trim().replace(/\r/g, '').split('\n'); if (lines.length < 2) return []; const headers = lines[0].split('\t').map(h => h.trim()); return lines.slice(1).map(line => { if (!line.trim()) return null; const values = line.split('\t'); const entry = {}; headers.forEach((header, index) => { const key = header; const rawValue = (values[index] || '').trim(); if (rawValue === '') entry[key] = null; else { const numValue = parseFloat(rawValue); entry[key] = !isNaN(numValue) ? numValue : rawValue; } }); return entry; }).filter(Boolean);
-    };
+    // (DELETED) parseTSV removed
 
-    // (MODIFIED) initializeApp - remove facilityPrefMaster logic
+    // (MODIFIED) initializeApp - remove facilityPrefMaster and TSV loading logic
     const initializeApp = async () => {
         try {
-            const tsv3m = await fetch('./tifo_complain_3m.tsv').then(res => res.text());
-            allCommentData = parseTSV(tsv3m);
+            // TSV loading removed
             // facilityPrefMaster creation removed
 
             const [csvAll, csv1y, csv3m] = await Promise.all([ fetch('./tifo_score_all.csv').then(res => res.text()), fetch('./tifo_score_1y.csv').then(res => res.text()), fetch('./tifo_score_3m.csv').then(res => res.text()) ]);
-            // (MODIFIED) Parse CSV without master
             allSurveyData['all'] = parseCSV(csvAll);
             allSurveyData['1y'] = parseCSV(csv1y);
             allSurveyData['3m'] = parseCSV(csv3m);
@@ -181,7 +145,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (allSurveyData['all'].length === 0) throw new Error('表示対象となるデータ（全期間）がありません。');
             ['all', '1y', '3m'].forEach(period => {
                 const list = { "富山": [], "石川": [], "福井": [] };
-                // (MODIFIED) Ensure item['県'] exists before pushing
                 const filteredData = allSurveyData[period].filter(item => item['回答数'] >= 30 && item['県']); // Add check for item['県']
                 filteredData.forEach(item => { if (list[item['県']] && item['施設']) list[item['県']].push(item['施設']); });
                 list["富山"].sort(); list["石川"].sort(); list["福井"].sort(); allFacilityLists[period] = list;
@@ -197,10 +160,10 @@ document.addEventListener('DOMContentLoaded', () => {
         currentSurveyDataForRankings = allSurveyData[currentPeriod].filter(d => d['回答数'] >= 30); currentFacilityList = allFacilityLists[currentPeriod][currentPref] || [];
     };
     const updateFacilityFilter = () => { /* 省略 */
-        const facilityFilter = document.getElementById('facility-filter'); facilityFilter.innerHTML = '<option selected value="">施設を選択してください...</option>'; currentFacilityList.forEach(facilityName => { const opt = document.createElement('option'); opt.value = facilityName; opt.textContent = facilityName; facilityFilter.appendChild(opt); }); resetFacilityDetailView();
+        const facilityFilter = document.getElementById('facility-filter'); facilityFilter.innerHTML = '<option selected value="">施設・エリアを選択してください...</option>'; currentFacilityList.forEach(facilityName => { const opt = document.createElement('option'); opt.value = facilityName; opt.textContent = facilityName; facilityFilter.appendChild(opt); }); resetFacilityDetailView();
     };
     const resetFacilityDetailView = () => { /* 省略 */
-        document.getElementById('facility-scores').classList.add('hidden'); document.getElementById('facility-detail-wrapper').classList.add('hidden'); document.getElementById('facility-prompt').classList.remove('hidden'); const promptEl = document.getElementById('facility-prompt'); if (currentFacilityList.length === 0) promptEl.innerHTML = `<p class="text-gray-500 text-center pt-10">${currentPref}にはこの期間のデータがありません。</p>`; else promptEl.innerHTML = '<p class="text-gray-500 text-center pt-10">施設を選択してください。</p>';
+        document.getElementById('facility-scores').classList.add('hidden'); document.getElementById('facility-detail-wrapper').classList.add('hidden'); document.getElementById('facility-prompt').classList.remove('hidden'); const promptEl = document.getElementById('facility-prompt'); if (currentFacilityList.length === 0) promptEl.innerHTML = `<p class="text-gray-500 text-center pt-10">${currentPref}にはこの期間のデータがありません。</p>`; else promptEl.innerHTML = '<p class="text-gray-500 text-center pt-10">施設・エリアを選択してください。</p>'; document.getElementById('ishikawa-detail-link-container').classList.add('hidden'); // Hide Ishikawa button on reset
     };
     const setupEventListeners = () => { /* 省略 */
         const analysisBtn = document.getElementById('analysis-btn'); const analysisResults = document.getElementById('analysis-results'); const introSection = document.getElementById('intro-section'); const mainTabs = [{ btn: document.getElementById('main-tab-facility'), panel: document.getElementById('panel-facility') }, { btn: document.getElementById('main-tab-segment'), panel: document.getElementById('panel-segment') }, { btn: document.getElementById('main-tab-overall'), panel: document.getElementById('panel-overall') }]; const npsTab = document.getElementById('nps-tab'); const satisfactionTab = document.getElementById('satisfaction-tab'); const categoryFilter = document.getElementById('category-filter'); const detailFilter = document.getElementById('detail-filter'); const facilityFilter = document.getElementById('facility-filter'); const aboutButton = document.getElementById('about-button'); const aboutModal = document.getElementById('about-modal'); const closeAboutModalButton = document.getElementById('close-about-modal-button');
@@ -221,31 +184,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if(topData.length===0)return '<li class="text-gray-500 text-sm">データなし</li>';return topData.map(([key,percentage],index)=>{const pD=percentage.toFixed(1);let rC='rank-default';if(index===0)rC='rank-1';if(index===1)rC='rank-2';if(index===2)rC='rank-3';if(index===3)rC='rank-4';if(index===4)rC='rank-5';return `<li class="flex items-center text-sm"><span class="rank-badge !w-6 !h-6 !text-xs ${rC}">${index+1}</span><span class="ml-2 flex-1 text-gray-700 truncate" title="${key}">${key}</span><span class="font-bold w-16 text-right" style="color: var(--tifo-primary-dark);">${pD}%</span></li>`;}).join('');
     };
 
-    // (MODIFIED) Create Comment Card
-    const createCommentCard = (comment) => {
-        const stars = (rating) => { let s = ''; const r = rating ? Math.round(rating) : 0; for(let i=1; i<=5; i++) s += (i <= r) ? '★' : '☆'; return s; };
-        const satisfaction = comment['満足度（旅行全体）']; // Use this for display below
-        const satisfactionText = satisfaction !== null ? `${satisfaction} (${stars(satisfaction)})` : '-';
-        const nps = comment['おすすめ度']; let npsColor = 'text-gray-600'; if (nps >= 9) npsColor = 'text-green-600 font-bold'; else if (nps <= 6) npsColor = 'text-red-600 font-bold'; else if (nps >= 7) npsColor = 'text-yellow-600 font-bold';
-        const date = comment['アンケート回答日'] ? comment['アンケート回答日'].split(' ')[0] : '';
-        // (MODIFIED) Reference '満足度理由' for the main comment text
-        const commentText = comment['満足度理由'] || '(コメントなし)';
-        // (NEW) Additional info line includes prefecture
-        const commenterInfo = [ comment['年代'], comment['性別'], comment['居住都道府県'] ].filter(Boolean).join('・');
-
-        return `
-            <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm space-y-2">
-                <p class="font-semibold text-gray-800">${commentText}</p>
-                <div class="text-sm text-gray-500 space-y-1">
-                     <div class="flex items-center justify-between flex-wrap gap-y-1">
-                         <span class="font-bold ${satisfaction ? 'text-yellow-500' : ''}">旅行満足度: ${satisfactionText}</span>
-                         <span class="${npsColor}">推奨度: ${nps !== null ? nps : '-'}</span>
-                         <span class="text-xs">${date}</span>
-                     </div>
-                     <p class="text-xs">${commenterInfo}</p>
-                </div>
-            </div>`;
-    };
+    // (DELETED) createCommentCard function removed
 
     const getSortableNPS = (value) => { if (typeof value !== 'number') return -Infinity; return Math.abs(value) <= 1 ? value * 100 : value; };
     const renderSimpleRanking = (type) => { /* 省略 */
@@ -259,32 +198,36 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!filterValue) { segmentRankingContainer.innerHTML = '<p class="text-gray-500 text-center pt-10">詳細を選択してください。</p>'; return; }
 
         const calculatedData = currentSurveyDataForRankings.map(item => {
-            // Assume item[filterValue] is the COUNT for the selected segment
-            const count = item[filterValue];
+            const count = item[filterValue]; // Assume count
             const total = item['回答数'];
-            // (MODIFIED) Calculate percentage (count / total * 100)
             const percentage = (typeof count === 'number' && total > 0) ? (count / total) * 100 : -1;
             return { ...item, percentage: percentage };
         }).sort((a, b) => b.percentage - a.percentage); // Sort by calculated percentage
 
         segmentRankingContainer.innerHTML = calculatedData.map((item, index) => {
             const score = item.percentage < 0 ? 'N/A' : item.percentage;
-            // Use createRankingCard, passing the calculated percentage
             return createRankingCard(index + 1, item['施設'], score, item['県'], '%'); // Unit is '%'
         }).join('');
     };
 
 
-    // (MODIFIED) Render Facility Detail Function - Correct attribute percentage calculation
+    // (MODIFIED) Render Facility Detail Function - Correct attribute percentage calculation & remove comments
     const renderFacilityDetail = (facilityName) => {
-        const scoresContainer = document.getElementById('facility-scores'); const detailWrapper = document.getElementById('facility-detail-wrapper'); const prompt = document.getElementById('facility-prompt'); const commentsContainer = document.getElementById('facility-comments-container');
-        if (!facilityName) { resetFacilityDetailView(); return; }
-        // Fetch data specifically for this facility from the period data (already filtered by answer count >= 30 in initializeApp)
-        // (MODIFIED) Use allSurveyData directly as currentSurveyDataForRankings might not contain the facility if filtered by count
-        const facilityData = allSurveyData[currentPeriod].find(item => item['施設'] === facilityName && item['県'] === currentPref); // Find the correct facility data first
-        if (!facilityData || facilityData['回答数'] < 30) { // Check answer count here
+        const scoresContainer = document.getElementById('facility-scores');
+        const detailWrapper = document.getElementById('facility-detail-wrapper');
+        const prompt = document.getElementById('facility-prompt');
+        const ishikawaLinkContainer = document.getElementById('ishikawa-detail-link-container'); // Get Ishikawa button container
+
+        if (!facilityName) {
+            resetFacilityDetailView();
+            return;
+        }
+
+        const facilityData = allSurveyData[currentPeriod].find(item => item['施設'] === facilityName && item['県'] === currentPref);
+        if (!facilityData || facilityData['回答数'] < 30) {
              resetFacilityDetailView(); prompt.innerHTML = '<p class="text-red-500 text-center pt-10">この施設のデータが見つからないか、回答数が30未満です。</p>'; return;
         }
+
         scoresContainer.classList.remove('hidden'); detailWrapper.classList.remove('hidden'); prompt.classList.add('hidden');
 
         // --- 1. NPSと満足度ゲージ ---
@@ -292,34 +235,31 @@ document.addEventListener('DOMContentLoaded', () => {
         const satisfaction = facilityData['満足度（旅行全体）']; const satisfactionScore = (satisfaction && !isNaN(satisfaction)) ? Number(satisfaction) : 0; document.getElementById('facility-satisfaction-score').textContent = satisfactionScore.toFixed(1); document.getElementById('facility-satisfaction-bar').style.width = `${(satisfactionScore / 5) * 100}%`;
 
         // --- 2. 属性TOP5 (MODIFIED: Use COUNT / TOTAL * 100) ---
-        const totalAnswers = facilityData['回答数']; // Get total answers for percentage calculation
+        const totalAnswers = facilityData['回答数'];
         for (const categoryKey in facilityAttributeCategories) {
             const category = facilityAttributeCategories[categoryKey]; let segments = [];
             category.columns.forEach(colName => {
                 if (facilityData.hasOwnProperty(colName)) {
-                    // Assume the value is the COUNT
-                    const count = facilityData[colName];
+                    const count = facilityData[colName]; // Assume count
                     if (typeof count === 'number' && count > 0 && totalAnswers > 0) {
-                        // (MODIFIED) Calculate percentage: (count / totalAnswers) * 100
                         const percentage = (count / totalAnswers) * 100;
-                        segments.push([colName, percentage]); // Store [key, percentage]
+                        segments.push([colName, percentage]);
                     }
                 }
             });
-            segments.sort((a, b) => b[1] - a[1]); // Sort by percentage
-            const top5Segments = segments.slice(0, 5);
-            // Ensure container exists before setting innerHTML
-            if (category.container) {
-                 category.container.innerHTML = createAttributeRankingList(top5Segments); // Render using percentages
-            } else {
-                 console.error(`Container not found for category: ${categoryKey}`);
-            }
+            segments.sort((a, b) => b[1] - a[1]); const top5Segments = segments.slice(0, 5);
+            if (category.container) category.container.innerHTML = createAttributeRankingList(top5Segments);
+            else console.error(`Container not found for category: ${categoryKey}`);
         }
 
-        // --- 3. 自由記述コメント ---
-        const comments = allCommentData.filter(comment => comment['回答場所'] === facilityName);
-        if (comments.length === 0) commentsContainer.innerHTML = '<p class="text-gray-500 text-center pt-10">この施設のコメントはありません。</p>';
-        else { comments.sort((a, b) => { const dA = new Date(a['アンケート回答日'] || 0); const dB = new Date(b['アンケート回答日'] || 0); return dB - dA; }); commentsContainer.innerHTML = comments.map(comment => createCommentCard(comment)).join(''); }
+        // --- 3. (DELETED) 自由記述コメントの描画ロジックを削除 ---
+
+        // --- 4. (NEW) 石川県詳細リンクの表示制御 ---
+        if (currentPref === '石川') {
+            ishikawaLinkContainer.classList.remove('hidden');
+        } else {
+            ishikawaLinkContainer.classList.add('hidden');
+        }
     };
 
     initializeApp();
