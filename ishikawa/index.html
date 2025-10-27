@@ -3,12 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TIFO - 観光猫型アドバイザリー</title>
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="defalt">
-    <link rel="icon" href="../favicon.ico">
-    <link rel="apple-touch-icon" href="../tifo.png">
-    <link rel="manifest" href="./manifest.json">
+    <title>TIFO - 観光猫型AIアドバイザリー</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -21,11 +16,25 @@
             --tifo-primary-dark: #38B2AC;
             --tifo-card-border: #E2E8F0;
             --tifo-card-bg: #FFFFFF;
+            /* 県のカラーコード */
+            --color-toyama-bg: #4db56a;
+            --color-ishikawa-bg: #008cbe;
+            --color-fukui-bg: #00006b;
+            --color-pref-text: #ffffff;
         }
         body {
             font-family: 'Noto Sans JP', sans-serif;
             background-color: var(--tifo-bg);
             color: var(--tifo-text);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        main#app-container {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
         .tifo-card {
             background-color: var(--tifo-card-bg);
@@ -33,9 +42,6 @@
             padding: 1.5rem;
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
             border: 1px solid var(--tifo-card-border);
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
         }
         .tifo-button {
             background-color: var(--tifo-primary);
@@ -54,15 +60,104 @@
             transform: translateY(2px);
             border-bottom-width: 2px;
         }
+        
+        /* --- メインタブ --- */
+        .main-tab-button {
+            padding: 0.75rem 1.25rem;
+            font-weight: 600;
+            color: #A0AEC0;
+            transition: all 0.2s ease;
+            border-bottom: 4px solid transparent;
+            font-size: 0.95rem;
+        }
+        .main-tab-button:hover {
+            background-color: #F7FAFC;
+            color: #4A5568;
+        }
+        .main-tab-button.active {
+            color: var(--tifo-primary);
+            border-bottom-color: var(--tifo-primary);
+        }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        
+        /* --- サブタブ（全体ランキング内） --- */
+        .sub-tab-button {
+            padding: 0.75rem 1rem;
+            border-bottom: 3px solid transparent;
+            font-weight: 600;
+            color: #A0AEC0;
+            transition: all 0.2s ease;
+        }
+        .sub-tab-button:hover {
+            background-color: #F7FAFC;
+            color: #4A5568;
+        }
+        .sub-tab-button.active {
+            color: var(--tifo-primary);
+            border-bottom-color: var(--tifo-primary);
+        }
+        
+        /* --- 期間/県 選択ボタン --- */
+        .period-button-group {
+            display: inline-flex;
+            border-radius: 0.75rem; /* rounded-xl */
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--tifo-card-border);
+            overflow: hidden;
+            background-color: #FFFFFF;
+        }
+        .period-button {
+            padding: 0.5rem 1rem; /* py-2 px-4 */
+            font-size: 0.875rem; /* text-sm */
+            font-weight: 600; /* font-semibold */
+            background-color: #FFFFFF;
+            color: #6B7280; /* text-gray-500 */
+            border-right: 1px solid var(--tifo-card-border);
+            transition: all 0.2s ease;
+        }
+        .period-button:last-child {
+            border-right: none;
+        }
+        .period-button:hover {
+            background-color: #F9FAFB; /* hover:bg-gray-50 */
+        }
+        .period-button.active {
+            background-color: var(--tifo-primary);
+            color: white;
+            box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+        }
+
+        /* --- ランキングバッジ (ishikawa版からrank-4, 5 を追加) --- */
         .rank-badge {
-            width: 2rem; height: 2rem; border-radius: 50%; display: inline-flex;
+            width: 2.25rem; height: 2.25rem; border-radius: 50%; display: inline-flex;
             align-items: center; justify-content: center; font-weight: bold; color: white;
-            flex-shrink: 0;
+            flex-shrink: 0; font-size: 1rem;
         }
         .rank-1 { background-color: #FFD700; }
         .rank-2 { background-color: #C0C0C0; }
         .rank-3 { background-color: #CD7F32; }
-        .rank-4, .rank-5 { background-color: #A9A9A9; }
+        .rank-4, .rank-5, .rank-default { background-color: #A9A9A9; }
+        
+        .pref-badge {
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 9999px;
+        }
+        .pref-toyama { background-color: var(--color-toyama-bg); color: var(--color-pref-text); }
+        .pref-ishikawa { background-color: var(--color-ishikawa-bg); color: var(--color-pref-text); }
+        .pref-fukui { background-color: var(--color-fukui-bg); color: var(--color-pref-text); }
+        
+        .custom-scrollbar::-webkit-scrollbar { width: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
+
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 50; }
+        .modal-content { background-color: white; padding: 2rem; border-radius: 1rem; max-width: 90%; width: 700px; max-height: 80vh; overflow-y: auto; }
+
+        /* --- (NEW) NPS/満足度ゲージ (ishikawa版から移植) --- */
         .progress-bar-bg { background-color: #EDF2F7; border-radius: 9999px; overflow: hidden; height: 1.25rem; }
         .progress-bar {
             background-color: var(--tifo-primary);
@@ -79,750 +174,812 @@
         .nps-bar-container { position: relative; background: linear-gradient(to right, #FEB2B2, #EDF2F7, #9AE6B4); height: 0.75rem; border-radius: 9999px; }
         .nps-bar-marker { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 2px; height: 1.25rem; background-color: rgba(113, 128, 150, 0.5); border-radius: 1px; }
         .nps-bar-value { position: absolute; top: 50%; transform: translateY(-50%); width: 0.75rem; height: 0.75rem; background-color: var(--tifo-text); border-radius: 50%; border: 2px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.3); transition: left 0.5s ease-in-out; }
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background-color: rgba(45, 55, 72, 0.75);
-            display: flex; align-items: center; justify-content: center;
-            z-index: 50;
-            transition: opacity 0.3s ease;
-        }
-        .modal-overlay.hidden {
-            opacity: 0;
-            pointer-events: none;
-        }
-        .modal-content {
-            background-color: white;
-            padding: 2rem;
-            border-radius: 1.5rem;
-            max-width: 90%;
-            width: 650px;
-            max-height: 85vh;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
-            transition: transform 0.3s ease, opacity 0.3s ease;
-        }
-        .modal-overlay.hidden .modal-content {
-             transform: translateY(-20px);
-             opacity: 0;
-        }
-        .feedback-tab-button {
-            padding: 0.5rem 0.75rem;
-            border-bottom: 3px solid transparent;
-            font-weight: 600;
-            color: #A0AEC0;
-            transition: all 0.2s ease;
-            flex-shrink: 0;
-        }
-        .feedback-tab-button:hover {
-            background-color: #F7FAFC;
-            color: #4A5568;
-        }
-        .feedback-tab-button.active {
-            color: var(--tifo-primary);
-            border-bottom-color: var(--tifo-primary);
-        }
-        .feedback-content {
-            height: 40rem;
-            overflow-y: auto;
-        }
-        .custom-scrollbar::-webkit-scrollbar { width: 8px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
     </style>
 </head>
-<body>
-    <!-- ホーム画面 -->
-    <div id="home-screen" class="min-h-screen flex flex-col items-center justify-center p-4 text-center">
-        <div class="flex items-center justify-center gap-4 mb-4">
-            <div class="w-24 h-24">
-                <a href="https://codefornoto.github.io/TIFO/" target="_blank" rel="noopener noreferrer">
-                    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-                        <path fill="var(--tifo-primary)" d="M47.9,-51.9C62.4,-41.2,74.7,-25.9,78.2,-8.1C81.7,9.7,76.4,30.1,64.8,44.2C53.2,58.3,35.3,66.1,17.7,70.8C0.1,75.5,-17.2,77.1,-33.1,70.2C-49,63.3,-63.5,47.9,-71.4,30.1C-79.3,12.3,-80.6,-7.8,-74.3,-24.1C-68,-40.4,-54.1,-52.9,-38.8,-60.1C-23.5,-67.3,-6.8,-69.2,8.9,-66.1C24.6,-63,47.9,-51.9,47.9,-51.9Z" transform="translate(100 100)" />
-                        <text x="50%" y="55%" text-anchor="middle" dominant-baseline="middle" font-size="50" font-weight="bold" fill="white" letter-spacing="2">TIFO</text>
-                    </svg>
-                </a>
-            </div>
-            <img src="../tifo.png" alt="TIFOちゃん" class="h-20 w-20 object-contain">
-        </div>
-        <p class="text-lg text-gray-600 mb-8">観光猫型AIアドバイザリー</p>
-        <div id="loading-message" class="text-gray-600"><p>データを読み込んでいます...</p></div>
-        <div id="main-content" class="w-full max-w-md hidden">
-            <label for="facility-select" class="block mb-2 text-gray-700 font-bold">分析したい施設を選んでにゃ🐾</label>
-            <select id="facility-select" class="w-full p-3 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-teal-400 focus:border-teal-400"></select>
-            <button id="analyze-button" class="tifo-button w-full mt-6">データを分析</button>
-        </div>
-        <div class="absolute bottom-4">
-            <button id="disclaimer-button" class="text-sm text-gray-500 hover:underline">免責事項</button>
-        </div>
+<body class="text-gray-800">
+    
+    <div id="loading-indicator" class="min-h-screen flex flex-col items-center justify-center p-4 text-center">
+        <p class="text-gray-600">データを読み込んでいます...</p>
     </div>
 
-    <!-- 分析結果画面 -->
-    <div id="analysis-screen" class="hidden p-4 md:p-8 max-w-5xl mx-auto">
-        <header class="flex items-center justify-between mb-8">
-            <h1 id="facility-title" class="text-3xl font-bold"></h1>
-            <button id="back-button" class="tifo-button">戻る</button>
-        </header>
+    <main id="app-container" class="container mx-auto p-4 md:p-8 max-w-4xl hidden">
+        <div id="intro-section">
+            <header class="flex items-center justify-center gap-4 mb-4 text-center">
+                <a href="https://codefornoto.github.io/TIFO/" target="_blank" rel="noopener noreferrer">
+                    <div class="w-24 h-24">
+                        <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                            <path fill="var(--tifo-primary)" d="M47.9,-51.9C62.4,-41.2,74.7,-25.9,78.2,-8.1C81.7,9.7,76.4,30.1,64.8,44.2C53.2,58.3,35.3,66.1,17.7,70.8C0.1,75.5,-17.2,77.1,-33.1,70.2C-49,63.3,-63.5,47.9,-71.4,30.1C-79.3,12.3,-80.6,-7.8,-74.3,-24.1C-68,-40.4,-54.1,-52.9,-38.8,-60.1C-23.5,-67.3,-6.8,-69.2,8.9,-66.1C24.6,-63,47.9,-51.9,47.9,-51.9Z" transform="translate(100 100)"></path>
+                            <text x="50%" y="55%" text-anchor="middle" dominant-baseline="middle" font-size="50" font-weight="bold" fill="white" letter-spacing="2">TIFO</text>
+                        </svg>
+                    </div>
+                </a>
+                <img src="tifo.png" alt="TIFOちゃん" class="h-20 w-20 object-contain">
+            </header>
+            <p class="text-lg text-gray-600 mb-8 text-center">観光猫型AIアドバイザリー</p>
 
-        <main class="space-y-8">
-            <section>
-                <h2 class="text-2xl font-bold mb-4 flex items-center">基本スコア</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                     <div class="tifo-card text-center"><h3 class="text-lg font-bold mb-2">全回答数</h3><p id="total-answers" class="text-6xl font-bold" style="color: var(--tifo-primary);"></p><p id="total-answers-rank" class="text-sm text-gray-500 mt-3"></p></div>
-                     <div class="tifo-card text-center"><h3 class="text-lg font-bold mb-2">❤️ NPS (顧客推奨度)</h3><p id="nps-score" class="text-6xl font-bold" style="color: var(--tifo-primary);"></p><p class="text-xs text-gray-500">(-100 ~ 100の範囲)</p><div class="w-full mt-3 relative"><div class="nps-bar-container"><div class="nps-bar-marker"></div><div id="nps-bar-value" class="nps-bar-value"></div></div></div><p id="nps-rank" class="text-sm text-gray-500 mt-3"></p></div>
-                </div>
-                <h2 class="text-2xl font-bold mb-4 flex items-center">各種満足度スコア</h2>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div class="tifo-card text-center"><h3 class="text-lg font-bold mb-2">🎁 商品・サービス</h3><div class="flex items-baseline justify-center"><p id="product-satisfaction" class="text-5xl font-bold" style="color: var(--tifo-primary);"></p><span class="text-2xl font-bold text-gray-500">/ 5.0</span></div><div class="w-full progress-bar-bg mt-3"><div id="product-satisfaction-bar" class="progress-bar" style="height: 1rem;"></div></div><p id="product-satisfaction-rank" class="text-sm text-gray-500 mt-3"></p></div>
-                    <div class="tifo-card text-center"><h3 class="text-lg font-bold mb-2">🏨 施設全体</h3><div class="flex items-baseline justify-center"><p id="facility-satisfaction" class="text-5xl font-bold" style="color: var(--tifo-primary);"></p><span class="text-2xl font-bold text-gray-500">/ 5.0</span></div><div class="w-full progress-bar-bg mt-3"><div id="facility-satisfaction-bar" class="progress-bar" style="height: 1rem;"></div></div><p id="facility-satisfaction-rank" class="text-sm text-gray-500 mt-3"></p></div>
-                    <div class="tifo-card text-center"><h3 class="text-lg font-bold mb-2">🚗 旅全体</h3><div class="flex items-baseline justify-center"><p id="trip-satisfaction" class="text-5xl font-bold" style="color: var(--tifo-primary);"></p><span class="text-2xl font-bold text-gray-500">/ 5.0</span></div><div class="w-full progress-bar-bg mt-3"><div id="trip-satisfaction-bar" class="progress-bar" style="height: 1rem;"></div></div><p id="trip-satisfaction-rank" class="text-sm text-gray-500 mt-3"></p></div>
-                </div>
+            <section class="text-center mb-8 space-y-4">
+                <button id="analysis-btn" class="tifo-button text-lg px-8">
+                    ３県連携データ分析
+                </button>
             </section>
+        </div>
+        
+        <div id="analysis-results" class="hidden space-y-6">
             
-            <section id="persona-section" class="tifo-card hidden">
-                 <h2 class="text-2xl font-bold mb-2 flex items-center gap-3">ペルソナ分析</h2>
-                 <p class="text-gray-600 mb-6">あなたの施設に最も回答している顧客グループTOP3です。</p>
-                 <div id="persona-container" class="space-y-6"></div>
-                 <template id="persona-template">
-                     <div class="border border-gray-200 rounded-xl p-4">
-                         <div class="flex items-center gap-4 mb-3">
-                             <span class="rank-badge"></span>
-                             <h3 class="text-xl font-bold text-gray-800"></h3>
-                         </div>
-                         <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
-                             <div class="persona-details space-y-2 text-gray-700">
-                                 <p class="flex items-center gap-3"><span class="persona-companion-icon text-2xl w-8 text-center"></span> <span class="font-bold">同伴者:</span> <span class="persona-companion"></span></p>
-                                 <p class="flex items-center gap-3"><span class="persona-age-icon text-2xl w-8 text-center"></span> <span class="font-bold">年　代:</span> <span class="persona-age"></span></p>
-                                 <p class="flex items-center gap-3"><span class="text-2xl w-8 text-center">🗾</span> <span class="font-bold">地　方:</span> <span class="persona-region"></span></p>
-                                 <p class="flex items-center gap-3"><span class="text-2xl w-8 text-center">💰</span> <span class="font-bold">年　収:</span> <span class="persona-income"></span></p>
-                             </div>
-                             <div class="space-y-2">
-                                 <label class="font-bold text-gray-700">回答者全体における割合（確度）</label>
-                                 <div class="progress-bar-bg"><div class="progress-bar" style="width: 0%;"></div></div>
-                                 <p class="persona-counts text-right text-sm text-gray-500"></p>
-                             </div>
-                         </div>
-                     </div>
-                 </template>
-            </section>
-            
-            <section id="customer-voice-section">
-                 <h2 class="text-2xl font-bold mb-4 flex items-center">直近１か月のお客様の声</h2>
-                 <div class="tifo-card !p-0 overflow-hidden">
-                     <div class="px-6 border-b border-gray-200">
-                         <nav class="-mb-px flex space-x-2 overflow-x-auto" aria-label="Tabs">
-                             <button data-tab="service" class="feedback-tab-button active">商品・サービス</button>
-                             <button data-tab="facility" class="feedback-tab-button">施設全体</button>
-                             <button data-tab="inconvenience" class="feedback-tab-button">不便な点</button>
-                             <button data-tab="request" class="feedback-tab-button">リクエスト</button>
-                             <button data-tab="nps" class="feedback-tab-button">NPSの理由</button>
-                         </nav>
-                     </div>
-                     <div class="p-6 bg-gray-50">
-                         <div id="feedback-content-service" class="feedback-content custom-scrollbar space-y-4"></div>
-                         <div id="feedback-content-facility" class="feedback-content custom-scrollbar space-y-4 hidden"></div>
-                         <div id="feedback-content-inconvenience" class="feedback-content custom-scrollbar space-y-4 hidden"></div>
-                         <div id="feedback-content-request" class="feedback-content custom-scrollbar space-y-4 hidden"></div>
-                         <div id="feedback-content-nps" class="feedback-content custom-scrollbar space-y-4 hidden"></div>
-                     </div>
-                 </div>
-            </section>
+            <div class="flex justify-center">
+                 <div class="period-button-group" id="pref-selector">
+                    <button class="period-button active" data-pref="富山">富山</button>
+                    <button class="period-button" data-pref="石川">石川</button>
+                    <button class="period-button" data-pref="福井">福井</button>
+                </div>
+            </div>
 
-            <section id="ai-advice-section">
-                <h2 class="text-2xl font-bold mb-4 flex items-center">TifoちゃんからのAIアドバイス</h2>
-                <div class="flex items-stretch md:items-start gap-4">
-                    <img src="../tifo.png" alt="TIFOちゃん" class="h-32 w-32 object-contain flex-shrink-0 hidden md:block">
-                    <div class="bg-white p-6 rounded-xl md:rounded-r-xl md:rounded-bl-xl relative w-full flex-1 border border-gray-200">
-                        <div class="absolute left-[-10px] top-[15px] w-0 h-0 border-t-[10px] border-t-transparent border-r-[10px] border-r-white border-b-[10px] border-b-transparent hidden md:block"></div>
-                        <div class="flex flex-col h-full">
-                            <div>
-                                <p class="text-gray-800 font-bold text-lg"><strong id="ai-advice-facility-name"></strong>さんへ</p>
-                                <p class="text-gray-600 mt-2">ペルソナと自由記述の意見を元にアドバイスを考えたにゃ🐾</p>
+            <div class="flex border-b border-gray-200 bg-white rounded-t-2xl px-2 pt-2" style="box-shadow: 0 4px 6px -1px rgba(0,0,0,0.03);">
+                <button id="main-tab-facility" class="main-tab-button active">施設別データ</button>
+                <button id="main-tab-segment" class="main-tab-button">属性別ランキング</button>
+                <button id="main-tab-overall" class="main-tab-button">全体ランキング</button>
+            </div>
+
+            <div class="tifo-card -mt-8 pt-8">
+                
+                <div id="panel-facility" class="tab-content active space-y-6">
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-xl font-bold" style="color: var(--tifo-primary-dark);">施設別 訪問者データ</h2>
+                        <div class="period-button-group" id="period-selector-facility">
+                            <button class="period-button active" data-period="all" data-target="facility">全期間</button>
+                            <button class="period-button" data-period="1y" data-target="facility">1年</button>
+                            <button class="period-button" data-period="3m" data-target="facility">3か月</button>
+                        </div>
+                    </div>
+                    
+                    <div class="w-full">
+                        <select id="facility-filter" class="w-full p-2.5 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-teal-400 focus:border-teal-400">
+                            <option selected value="">まず施設を選択してください...</option>
+                        </select>
+                    </div>
+                    
+                    <div id="facility-scores" class="hidden space-y-4 pt-4 border-t border-gray-200">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="tifo-card !shadow-none border text-center p-4">
+                                <h3 class="text-lg font-bold mb-2">❤️ NPS (顧客推奨度)</h3>
+                                <p id="facility-nps-score" class="text-5xl font-bold" style="color: var(--tifo-primary);"></p>
+                                <p class="text-xs text-gray-500">(-100 ~ 100の範囲)</p>
+                                <div class="w-full mt-3 relative">
+                                    <div class="nps-bar-container">
+                                        <div class="nps-bar-marker"></div>
+                                        <div id="facility-nps-bar" class="nps-bar-value" style="left: 50%;"></div>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="mt-auto pt-4 text-center md:text-right">
-                                <button id="open-ai-advice-btn" class="tifo-button">AIからのアドバイスを見る</button>
+                            <div class="tifo-card !shadow-none border text-center p-4">
+                                <h3 class="text-lg font-bold mb-2">🏨 施設全体満足度</h3>
+                                <div class="flex items-baseline justify-center">
+                                    <p id="facility-satisfaction-score" class="text-5xl font-bold" style="color: var(--tifo-primary);"></p>
+                                    <span class="text-2xl font-bold text-gray-500">/ 5.0</span>
+                                </div>
+                                <div class="w-full progress-bar-bg mt-3">
+                                    <div id="facility-satisfaction-bar" class="progress-bar" style="height: 1.25rem;"></div>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </section>
-            
-            <section>
-                <h2 class="text-2xl font-bold mb-4 flex items-center">グループ別 来訪者TOP5</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="tifo-card"><h3 class="text-lg font-bold mb-4">🚻 性別</h3><ul id="gender-ranking" class="space-y-3"></ul></div>
-                    <div class="tifo-card"><h3 class="text-lg font-bold mb-4">🎂 年代</h3><ul id="age-ranking" class="space-y-3"></ul></div>
-                    <div class="tifo-card"><h3 class="text-lg font-bold mb-4">🌙 宿泊日数</h3><ul id="stay-duration-ranking" class="space-y-3"></ul></div>
-                    <div class="tifo-card"><h3 class="text-lg font-bold mb-4">👪 同伴者</h3><ul id="companion-ranking" class="space-y-3"></ul></div>
-                    <div class="tifo-card col-span-1 md:col-span-2"><h3 class="text-lg font-bold mb-4">✈️ 旅の目的</h3><ul id="purpose-ranking" class="space-y-3"></ul></div>
-                    <div class="tifo-card col-span-1 md:col-span-2"><h3 class="text-lg font-bold mb-4">💰 世帯年収</h3><ul id="income-ranking" class="space-y-3"></ul></div>
-                    <div class="tifo-card col-span-1 md:col-span-2"><h3 class="text-lg font-bold mb-4">🗾 都道府県</h3><ul id="prefecture-ranking" class="space-y-3"></ul></div>
-                </div>
-            </section>
-            
-            <section>
-                 <h2 class="text-2xl font-bold mb-4 flex items-center">Tifoちゃんからのアドバイス</h2>
-                 <div class="flex items-start gap-4">
-                       <img src="../tifo.png" alt="TIFOちゃん" class="h-32 w-32 object-contain flex-shrink-0">
-                       <div class="bg-white p-4 rounded-r-xl rounded-bl-xl relative w-full">
-                             <div class="absolute left-[-10px] top-[15px] w-0 h-0 border-t-[10px] border-t-transparent border-r-[10px] border-r-white border-b-[10px] border-b-transparent"></div>
-                            <p id="tifo-advice-text" class="text-gray-700"></p>
-                       </div>
-                 </div>
-            </section>
 
-            <div class="mt-8 flex justify-center">
-                <button id="back-button-bottom" class="tifo-button">戻る</button>
-            </div>
-        </main>
-    </div>
+                    <div id="facility-detail-wrapper" class="hidden space-y-6 pt-4 border-t border-gray-200">
+                        <div>
+                            <h3 class="text-lg font-semibold mb-3 text-gray-700">属性別 来訪者割合 TOP 5</h3>
+                            <div id="facility-attributes-container" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div class="tifo-card !shadow-none border p-4"><h4 class="text-md font-bold mb-3">年代</h4><ul id="attr-age" class="space-y-2"></ul></div>
+                                <div class="tifo-card !shadow-none border p-4"><h4 class="text-md font-bold mb-3">性別</h4><ul id="attr-gender" class="space-y-2"></ul></div>
+                                <div class="tifo-card !shadow-none border p-4"><h4 class="text-md font-bold mb-3">都道府県</h4><ul id="attr-prefecture" class="space-y-2"></ul></div>
+                                <div class="tifo-card !shadow-none border p-4"><h4 class="text-md font-bold mb-3">旅の目的</h4><ul id="attr-purpose" class="space-y-2"></ul></div>
+                                <div class="tifo-card !shadow-none border p-4"><h4 class="text-md font-bold mb-3">情報源</h4><ul id="attr-source" class="space-y-2"></ul></div>
+                                <div class="tifo-card !shadow-none border p-4"><h4 class="text-md font-bold mb-3">世帯年収</h4><ul id="attr-income" class="space-y-2"></ul></div>
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold mb-3 text-gray-700">自由記述コメント (直近3か月)</h3>
+                            <div id="facility-comments-container" class="custom-scrollbar h-80 overflow-y-auto pr-2 space-y-3">
+                                 <p class="text-gray-500 text-center pt-10">施設を選択するとコメントが表示されます。</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="facility-prompt" class="pt-10">
+                        <p class="text-gray-500 text-center">施設を選択してください。</p>
+                    </div>
 
-    <!-- ▼▼▼ 免責事項モーダル構造修正 ▼▼▼ -->
-    <div id="disclaimer-modal" class="modal-overlay hidden">
-        <div class="modal-content !w-[600px]">
-            <div class="flex-shrink-0 flex justify-between items-center pb-4 mb-4 border-b">
-                <h2 class="text-2xl font-bold">免責事項</h2>
-                <button id="close-disclaimer-icon-btn" class="text-gray-400 hover:text-gray-600 transition-colors">
-                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </button>
-            </div>
-            <div id="disclaimer-text" class="flex-grow overflow-y-auto custom-scrollbar pr-2 text-sm text-gray-600 leading-relaxed space-y-2">
-                <!-- Content will be inserted here -->
-            </div>
-            <div class="flex-shrink-0 pt-6">
-                <button id="close-modal-button" class="tifo-button w-full">閉じる</button>
+                </div>
+
+                <div id="panel-segment" class="tab-content space-y-6">
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-xl font-bold" style="color: var(--tifo-primary-dark);">セグメント別ランキング</h2>
+                        <div class="period-button-group" id="period-selector-segment">
+                            <button class="period-button active" data-period="all" data-target="segment">全期間</button>
+                            <button class="period-button" data-period="1y" data-target="segment">1年</button>
+                            <button class="period-button" data-period="3m" data-target="segment">3か月</button>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <select id="category-filter" class="w-full p-2.5 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-teal-400 focus:border-teal-400">
+                            <option selected value="">分析軸を選択...</option>
+                            <option value="age">年代</option>
+                            <option value="gender">性別</option>
+                            <option value="stay">宿泊数</option>
+                            <option value="companion">同伴者</option>
+                            <option value="purpose">旅の目的</option>
+                            <option value="prefecture">都道府県</option>
+                            <option value="source">情報源</option>
+                            <option value="income">世帯年収</option>
+                        </select>
+                        <select id="detail-filter" class="w-full p-2.5 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-teal-400 focus:border-teal-400" disabled>
+                            <option selected value="">詳細を選択...</option>
+                        </select>
+                    </div>
+                    <div id="segment-ranking-container" class="custom-scrollbar h-96 overflow-y-auto pr-2 space-y-3 pt-4 border-t border-gray-200">
+                         <p class="text-gray-500 text-center pt-10">はじめに分析軸を選択してください。</p>
+                    </div>
+                </div>
+
+                <div id="panel-overall" class="tab-content space-y-6">
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-xl font-bold" style="color: var(--tifo-primary-dark);">全体ランキング</h2>
+                         <div class="period-button-group" id="period-selector-overall">
+                            <button class="period-button active" data-period="all" data-target="overall">全期間</button>
+                            <button class="period-button" data-period="1y" data-target="overall">1年</button>
+                            <button class="period-button" data-period="3m" data-target="overall">3か月</button>
+                        </div>
+                    </div>
+                
+                     <div class="flex border-b border-gray-200 -mt-2">
+                        <button id="nps-tab" class="sub-tab-button active">NPS</button>
+                        <button id="satisfaction-tab" class="sub-tab-button">施設全体満足度</button>
+                    </div>
+                    <div id="ranking-container" class="custom-scrollbar h-96 overflow-y-auto pr-2 space-y-3"></div>
+                </div>
+
             </div>
         </div>
-    </div>
-    <!-- ▲▲▲ 免責事項モーダル構造修正 ▲▲▲ -->
+    </main>
 
-
-    <!-- AIアドバイスモーダル -->
-    <div id="ai-advice-modal" class="modal-overlay hidden">
+    <footer class="w-full p-4">
+         <div class="text-center">
+             <button id="about-button" class="text-sm text-gray-500 hover:underline">TIFOとは</button>
+         </div>
+    </footer>
+    
+    <div id="about-modal" class="modal-overlay hidden">
         <div class="modal-content">
-            <div class="flex-shrink-0 flex justify-between items-center border-b border-gray-200 pb-4 mb-4">
-                <h2 class="text-xl font-bold text-gray-800">TifoちゃんからのAIアドバイス</h2>
-                <button id="close-ai-advice-modal-btn" class="text-gray-400 hover:text-gray-600 transition-colors">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </button>
-            </div>
-            <div id="ai-advice-modal-body" class="flex-grow overflow-y-auto custom-scrollbar pr-2 whitespace-pre-wrap text-gray-700 leading-relaxed">
-            </div>
+            <h2 class="text-2xl font-bold mb-4">TIFOとは</h2>
+            <div id="about-text" class="text-sm text-gray-600 leading-relaxed space-y-2"></div>
+            <button id="close-about-modal-button" class="tifo-button mt-6 w-full">閉じる</button>
         </div>
     </div>
+    
 
 <script>
-document.addEventListener('DOMContentLoaded', async () => {
-    let surveyData = [];
-    let personaData = [];
-    let complainData = [];
-    let aiAdviceData = [];
-    let scoreFacilityKey = '';
-    let personaFacilityKey = '';
-    let adviceLines = [];
+document.addEventListener('DOMContentLoaded', () => {
 
-    const homeScreen = document.getElementById('home-screen');
-    const analysisScreen = document.getElementById('analysis-screen');
-    const facilitySelect = document.getElementById('facility-select');
-    const analyzeButton = document.getElementById('analyze-button');
-    const backButton = document.getElementById('back-button');
-    const backButtonBottom = document.getElementById('back-button-bottom');
-    const loadingMessage = document.getElementById('loading-message');
-    const mainContent = document.getElementById('main-content');
-    const disclaimerButton = document.getElementById('disclaimer-button');
-    const disclaimerModal = document.getElementById('disclaimer-modal');
-    const closeModalButton = document.getElementById('close-modal-button');
-    const closeDisclaimerIconBtn = document.getElementById('close-disclaimer-icon-btn'); // ▼▼▼ 追加 ▼▼▼
+    // --- Data Storage ---
+    let allSurveyData = { '3m': [], '1y': [], 'all': [] };
+    let allCommentData = [];
+    let allFacilityLists = { '3m': {}, '1y': {}, 'all': {} };
     
-    const aiAdviceModal = document.getElementById('ai-advice-modal');
-    const openAiAdviceBtn = document.getElementById('open-ai-advice-btn');
-    const closeAiAdviceModalBtn = document.getElementById('close-ai-advice-modal-btn');
-    const aiAdviceModalBody = document.getElementById('ai-advice-modal-body');
+    // --- Current State ---
+    let currentPeriod = 'all'; // 'all', '1y', '3m'
+    let currentPref = '富山'; // (NEW) '富山', '石川', '福井'
+    let currentSurveyData = []; // (NEW) 期間と県でフィルタリングされたデータ
+    let currentFacilityList = []; // (NEW) 期間と県でフィルタリングされた施設リスト
+    let currentOverallTab = 'nps'; // 'nps', 'satisfaction'
 
-    const complainColIndex = {
-        FACILITY: 1, TIMESTAMP: 2, SERVICE_SATISFACTION: 24, SERVICE_REASON: 25,
-        FACILITY_SATISFACTION: 26, FACILITY_REASON: 27, INCONVENIENCE: 28, INCONVENIENCE_REASON: 29,
-        NPS_SCORE: 30, REQUEST: 31, NPS_REASON: 42, BIRTH_YEAR: 35, PREFECTURE: 36, GENDER: 34,
+    const loadingIndicator = document.getElementById('loading-indicator');
+    const appContainer = document.getElementById('app-container');
+
+    // (REVISED) 属性別ランキングの分析軸と、施設別詳細で使うカラム名を定義
+    const filterOptions = {
+        age: ['10代','20代','30代','40代','50代','60代','70代','80代','90代','100代'],
+        gender: ['男', '女'], // CSVのカラム名に合わせる
+        stay: ['1泊', '2泊', '3泊', '4泊以上', '日帰り'],
+        companion: ['自分ひとり','恋人','友人','夫婦2人','団体旅行','親戚','親','職場の同僚','小学生以下連れの家族','中学生以下連れの家族','高校生連れの家族','災害支援'],
+        purpose: ['宿でのんびり過ごす','温泉や露天風呂','地元の美味しいものを食べる','花見や紅葉などの自然鑑賞','名所、旧跡の観光','テーマパーク（遊園地、動物園、博物館など）','買い物、アウトレット','お祭りやイベントへの参加・見物','スポーツ観戦や芸能鑑賞（コンサート等）','アウトドア（海水浴、釣り、登山など）','まちあるき、都市散策','各種体験（手作り、果物狩りなど）','スキー・スノボ、マリンスポーツ','その他スポーツ（ゴルフ、テニスなど）','ドライブ・ツーリング','友人・親戚を尋ねる','出張など仕事関係'],
+        prefecture: ['北海道','青森県','岩手県','宮城県','秋田県','山形県','福島県','茨城県','栃木県','群馬県','埼玉県','千葉県','東京都','神奈川県','新潟県','富山県','石川県','福井県','山梨県','長野県','岐阜県','静岡県','愛知県','三重県','滋賀県','京都府','大阪府','兵庫県','奈良県','和歌山県','鳥取県','島根県','岡山県','広島県','山口県','徳島県','香川県','愛媛県','高知県','福岡県','佐賀県','長崎県','熊本県','大分県','宮崎県','鹿児島県','沖縄県'],
+        source: ['Facebook','Google','Googleマップ','Instagram','TikTok','X（旧Twitter）','YouTube','SNS広告','ブログ','まとめサイト','インターネット・アプリ','デジタルニュース','宿泊予約Webサイト','宿泊施設','TV・ラジオ番組やCM','ラブライブのスタンプラリー','新聞・雑誌・ガイドブック','旅行会社','友人・知人','地元の人','観光パンフレット・ポスター','観光案内所','観光展・物産展','観光連盟やDMOのHP','その他'],
+        income: ['100万円未満', '100万円以上 200万円未満', '200万円以上 300万円未満', '300万円以上 400万円未満', '400万円以上 500万円未満', '500万円以上 600万円未満', '600万円以上 700万円未満', '700万円以上 800万円未満', '800万円以上 900万円未満', '900万円以上 1,000万円未満', '1,000万円以上 1,200万円未満', '1,200万円以上 1,500万円未満', '1,500万円以上', '分からない/無回答']
     };
-
-    function parseCSVWithHeaders(text) {
-        const lines = text.trim().replace(/\r/g, '').split('\n');
-        if (lines.length < 2) return { data: [], key: '' };
-        const headerLine = lines[0];
-        const regex = /(?:^|,)(?:"([^"]*(?:""[^"]*)*)"|([^,]*))/g;
-        const headers = [];
-        let match;
-        while(match = regex.exec(headerLine)) {
-            let value = match[1] ? match[1].replace(/""/g, '"') : match[2];
-            headers.push(value.trim());
-        }
-        const facilityKey = headers[0];
-        const data = lines.slice(1).map(line => {
-            const obj = {};
-            let i = 0;
-            regex.lastIndex = 0;
-            while(match = regex.exec(line)) {
-                if(i < headers.length) {
-                    const header = headers[i];
-                    let value = match[1] ? match[1].replace(/""/g, '"') : match[2];
-                    if (value) {
-                        const numValue = Number(value);
-                        obj[header] = !isNaN(numValue) && value.trim() !== '' ? numValue : value.trim();
-                    } else {
-                        obj[header] = null;
-                    }
-                    i++;
-                }
-            }
-            return obj;
-        });
-        return { data, key: facilityKey };
-    }
     
-    function parseAIAdviceTSV(text) {
-        const allLines = text.trim().replace(/\r/g, '').split('\n');
-        if (allLines.length < 2) return { data: [], key: '' };
-        const headers = allLines.shift().split('\t').map(h => h.trim());
-        const facilityKey = headers.includes('施設名') ? '施設名' : headers[0];
-        const data = [];
-        let currentObject = null;
-        for (const line of allLines) {
-            const parts = line.split('\t');
-            if (parts.length > 2) { 
-                if (currentObject) data.push(currentObject);
-                currentObject = {};
-                headers.forEach((header, i) => {
-                    currentObject[header] = (parts[i] || '').trim().replace(/^"|"$/g, '');
-                });
-            } else {
-                if (currentObject) {
-                    const lastHeader = headers[headers.length - 1];
-                    currentObject[lastHeader] += '\n' + line.trim().replace(/^"|"$/g, '');
-                }
-            }
+    // (NEW) 施設別属性表示用のカテゴリ定義
+    const facilityAttributeCategories = {
+        'age': { title: '年代', columns: filterOptions.age, container: document.getElementById('attr-age') },
+        'gender': { title: '性別', columns: filterOptions.gender, container: document.getElementById('attr-gender') },
+        'prefecture': { title: '都道府県', columns: filterOptions.prefecture, container: document.getElementById('attr-prefecture') },
+        'purpose': { title: '旅の目的', columns: filterOptions.purpose, container: document.getElementById('attr-purpose') },
+        'source': { title: '情報源', columns: filterOptions.source, container: document.getElementById('attr-source') },
+        'income': { title: '世帯年収', columns: filterOptions.income, container: document.getElementById('attr-income') }
+    };
+    
+    // --- Function to parse CSV ---
+    const parseCSV = (csvText) => {
+        if (csvText.charCodeAt(0) === 0xFEFF) {
+            csvText = csvText.slice(1);
         }
-        if (currentObject) data.push(currentObject);
-        return { data, key: facilityKey };
-    }
-
-    function parseTSVAsArrays(text) {
-        const lines = text.trim().replace(/\r/g, '').split('\n');
+        const lines = csvText.trim().replace(/\r/g, '').split('\n');
         if (lines.length < 2) return [];
-        return lines.slice(1).map(line => line.split('\t').map(val => val.trim()));
-    }
 
-    async function fetchAndParse(url, format = 'csv') {
-        const response = await fetch(url);
-        if (!response.ok) throw new Error(`Failed to load ${url}: ${response.statusText}`);
-        const text = await response.text();
-        const cleanText = text.charCodeAt(0) === 0xFEFF ? text.slice(1) : text;
+        const csvRegex = /(?:^|,)(?:"([^"]*(?:""[^"]*)*)"|([^,]*))/g;
         
-        if (format === 'ai-advice-tsv') {
-            return parseAIAdviceTSV(cleanText);
-        }
-        if (format === 'tsv-array') { 
-            return parseTSVAsArrays(cleanText);
-        }
-        return parseCSVWithHeaders(cleanText);
-    }
-
-    const handleRouteChange = () => {
-        const hash = location.hash.substring(1);
-        const facilityNameFromHash = decodeURIComponent(hash);
-        if (facilityNameFromHash && surveyData.length > 0) {
-            const facilityData = surveyData.find(d => d[scoreFacilityKey] === facilityNameFromHash);
-            if (facilityData) {
-                displayAnalysis(facilityData);
-                homeScreen.classList.add('hidden');
-                analysisScreen.classList.remove('hidden');
-                facilitySelect.value = facilityNameFromHash;
-                return;
+        const parseLine = (line) => {
+            const values = [];
+            let match;
+            csvRegex.lastIndex = 0;
+            while (match = csvRegex.exec(line)) {
+                let value = match[1] ? match[1].replace(/""/g, '"') : match[2];
+                values.push(value);
             }
-        }
-        homeScreen.classList.remove('hidden');
-        analysisScreen.classList.add('hidden');
-    };
+            return values;
+        };
 
-    async function loadData() {
-        try {
-            const loadingStatus = loadingMessage.querySelector('p');
-
-            loadingStatus.textContent = 'スコアデータを読み込み中...';
-            const scoreResult = await fetchAndParse('./milli_score.csv');
-            surveyData = scoreResult.data;
-            scoreFacilityKey = scoreResult.key;
-
-            loadingStatus.textContent = 'ペルソナデータを読み込み中...';
-            const personaResult = await fetchAndParse('./milli_persona.csv');
-            personaData = personaResult.data;
-            personaFacilityKey = personaResult.key;
-
-            loadingStatus.textContent = '口コミデータを読み込み中...';
-            complainData = await fetchAndParse('./milli_complain.tsv', 'tsv-array');
-            
-            loadingStatus.textContent = 'AIアドバイスを準備中...';
-            const aiAdviceResult = await fetchAndParse('./milli_ai_advice.tsv', 'ai-advice-tsv');
-            aiAdviceData = aiAdviceResult.data;
-
-            loadingStatus.textContent = '追加データを読み込み中...';
-            const adviceResponse = await fetch('../tifo_advice.txt').catch(e => null);
-            
-            if (surveyData.length === 0) throw new Error("No valid data rows found in milli_score.csv.");
-            
-            surveyData = surveyData.filter(row => row && row[scoreFacilityKey] && String(row[scoreFacilityKey]).trim() !== '');
-            surveyData.sort((a, b) => (Number(b['全回答数']) || 0) - (Number(a['全回答数']) || 0));
-            
-            if (adviceResponse && adviceResponse.ok) {
-                const adviceText = await adviceResponse.text();
-                adviceLines = adviceText.trim().split(/\r?\n/).filter(line => line.trim() !== '');
-            }
-
-            surveyData.forEach(data => {
-                const option = document.createElement('option');
-                option.value = data[scoreFacilityKey];
-                option.textContent = data[scoreFacilityKey];
-                facilitySelect.appendChild(option);
+        const headers = parseLine(lines[0]).map(h => h.trim() === '回答場所' ? '施設' : h.trim());
+        
+        return lines.slice(1).map(line => {
+            if (!line.trim()) return null;
+            const values = parseLine(line);
+            const entry = {};
+            headers.forEach((header, index) => {
+                const key = header;
+                const rawValue = (values[index] || '').trim();
+                
+                if (rawValue === '') {
+                    entry[key] = null;
+                } else {
+                    const numValue = parseFloat(rawValue);
+                    entry[key] = !isNaN(numValue) ? numValue : rawValue;
+                }
             });
-
-            loadingMessage.classList.add('hidden');
-            mainContent.classList.remove('hidden');
-            handleRouteChange();
-        } catch (error) {
-            console.error("Full error object:", error);
-            loadingMessage.innerHTML = `<p class="text-red-500 font-bold">エラー: データファイルの読み込みに失敗しました。</p><p class="text-sm mt-2">${error.message}</p>`;
-        }
-    }
-
-    analyzeButton.addEventListener('click', () => { location.hash = encodeURIComponent(facilitySelect.value); });
-    backButton.addEventListener('click', () => { location.hash = ''; });
-    backButtonBottom.addEventListener('click', () => { location.hash = ''; });
-    window.addEventListener('hashchange', handleRouteChange);
-    
-    // ▼▼▼ 免責事項モーダルのイベントリスナー修正 ▼▼▼
-    const openDisclaimerModal = async () => {
-         try {
-            const response = await fetch('../credit.txt');
-            if (!response.ok) throw new Error('File not found');
-            const text = await response.text();
-            document.getElementById('disclaimer-text').innerHTML = text.replace(/\n/g, '<br>');
-            disclaimerModal.classList.remove('hidden');
-        } catch(e) {
-            document.getElementById('disclaimer-text').textContent = '免責事項ファイルの読み込みに失敗しました。';
-            disclaimerModal.classList.remove('hidden');
-        }
+            if (entry['TIF']) {
+                entry['県'] = entry['TIF'];
+                delete entry['TIF'];
+            }
+            if (entry['回答場所'] && !entry['施設']) {
+                 entry['施設'] = entry['回答場所'];
+            }
+            
+            return entry;
+        }).filter(Boolean);
     };
-    const closeDisclaimerModal = () => {
-        disclaimerModal.classList.add('hidden');
-    };
-    disclaimerButton.addEventListener('click', openDisclaimerModal);
-    closeModalButton.addEventListener('click', closeDisclaimerModal);
-    closeDisclaimerIconBtn.addEventListener('click', closeDisclaimerModal);
-    disclaimerModal.addEventListener('click', (e) => { if(e.target === disclaimerModal) closeDisclaimerModal(); });
 
-    openAiAdviceBtn.addEventListener('click', () => {
-        const facilityName = facilitySelect.value;
-        const adviceInfo = aiAdviceData.find(d => d['施設名'] === facilityName);
+    // --- Function to parse TSV ---
+    const parseTSV = (tsvText) => {
+        if (tsvText.charCodeAt(0) === 0xFEFF) {
+            tsvText = tsvText.slice(1);
+        }
+        const lines = tsvText.trim().replace(/\r/g, '').split('\n');
+        if (lines.length < 2) return [];
+
+        const headers = lines[0].split('\t').map(h => h.trim());
         
-        if (adviceInfo && adviceInfo['AIアドバイス']) {
-            aiAdviceModalBody.textContent = adviceInfo['AIアドバイス'];
-        } else {
-            aiAdviceModalBody.textContent = 'この施設に関するAIアドバイスは現在ありません。';
-        }
-        aiAdviceModal.classList.remove('hidden');
-    });
+        return lines.slice(1).map(line => {
+            if (!line.trim()) return null;
+            const values = line.split('\t');
+            const entry = {};
+            headers.forEach((header, index) => {
+                const key = header;
+                const rawValue = (values[index] || '').trim();
+                
+                if (rawValue === '') {
+                    entry[key] = null;
+                } else {
+                    const numValue = parseFloat(rawValue);
+                    entry[key] = !isNaN(numValue) ? numValue : rawValue;
+                }
+            });
+            return entry;
+        }).filter(Boolean);
+    };
 
-    closeAiAdviceModalBtn.addEventListener('click', () => {
-        aiAdviceModal.classList.add('hidden');
-    });
 
-    aiAdviceModal.addEventListener('click', (e) => {
-        if (e.target === aiAdviceModal) {
-            aiAdviceModal.classList.add('hidden');
-        }
-    });
+    // --- (MODIFIED) Main initialization function ---
+    const initializeApp = async () => {
+        try {
+            const [csvAll, csv1y, csv3m, tsv3m] = await Promise.all([
+                fetch('./tifo_score_all.csv').then(res => res.text()),
+                fetch('./tifo_score_1y.csv').then(res => res.text()),
+                fetch('./tifo_score_3m.csv').then(res => res.text()),
+                fetch('./tifo_complain_3m.tsv').then(res => res.text())
+            ]);
 
-    function getRank(value, dataKey) {
-        if (value === null || value === undefined) return { rank: 'N/A', total: surveyData.length };
-        const sortedValues = surveyData.map(d => Number(d[dataKey]) || -Infinity).sort((a, b) => b - a);
-        const rank = sortedValues.indexOf(Number(value)) + 1;
-        return { rank, total: surveyData.length };
-    }
-    function updateSatisfactionCard(idPrefix, score, dataKey) {
-        const scoreValue = (score && !isNaN(score)) ? Number(score) : 0;
-        document.getElementById(`${idPrefix}`).textContent = scoreValue.toFixed(2);
-        document.getElementById(`${idPrefix}-bar`).style.width = `${(scoreValue / 5) * 100}%`;
-        const rankInfo = getRank(score, dataKey);
-        document.getElementById(`${idPrefix}-rank`).textContent = `(全${rankInfo.total}施設中 ${rankInfo.rank}位)`;
-    }
-    function getTopN(groups, n) {
-        return Object.entries(groups).filter(([key, value]) => Number(value) > 0 && key !== 'null' && key !== 'undefined').sort(([, a], [, b]) => Number(b) - Number(a)).slice(0, n);
-    }
-    function renderRankingList(elementId, topData) {
-        const listElement = document.getElementById(elementId);
-        listElement.innerHTML = '';
-        if (topData.length === 0) {
-            listElement.innerHTML = '<li class="text-gray-500">該当データなし</li>';
-            return;
-        }
-        topData.forEach(([key, value], index) => {
-            const percentage = (Number(value) * 100).toFixed(1);
-            const li = document.createElement('li');
-            li.className = 'flex items-center';
-            li.innerHTML = `<span class="rank-badge rank-${index + 1}">${index + 1}</span><span class="ml-3 flex-1">${key}</span><span class="font-bold">${percentage}%</span>`;
-            listElement.appendChild(li);
-        });
-    }
-    
-    function displayPersonaAnalysis(scoreData, facilityName) {
-        const personaSection = document.getElementById('persona-section');
-        const container = document.getElementById('persona-container');
-        const template = document.getElementById('persona-template');
-        container.innerHTML = '';
-        const personaRow = personaData.find(p => p[personaFacilityKey] === facilityName);
-        if (!personaRow) {
-            personaSection.classList.add('hidden');
-            return;
-        }
-        const personas = [];
-        for (let i = 1; i <= 3; i++) {
-            if (personaRow[`ps${i}_カウント`]) {
-                personas.push({
-                    rank: i,
-                    companion: personaRow[`ps${i}_同伴者`],
-                    age: personaRow[`ps${i}_年代`],
-                    region: personaRow[`ps${i}_地方`],
-                    income: personaRow[`ps${i}_年収`],
-                    count: personaRow[`ps${i}_カウント`],
+            // 回答数30件未満も読み込む（県別フィルタのため）
+            allSurveyData['all'] = parseCSV(csvAll);
+            allSurveyData['1y'] = parseCSV(csv1y);
+            allSurveyData['3m'] = parseCSV(csv3m);
+            allCommentData = parseTSV(tsv3m);
+
+            if (allSurveyData['all'].length === 0) {
+                 throw new Error('表示対象となるデータ（全期間）がありません。');
+            }
+
+            // 施設リストを期間ごとに作成
+            ['all', '1y', '3m'].forEach(period => {
+                const list = { "富山": [], "石川": [], "福井": [] };
+                // 回答数30件以上のみをリスト対象とする
+                const filteredData = allSurveyData[period].filter(item => item['回答数'] >= 30);
+                
+                filteredData.forEach(item => {
+                    if (list[item['県']] && item['施設']) {
+                        list[item['県']].push(item['施設']);
+                    }
                 });
-            }
-        }
-        if (personas.length === 0) {
-            personaSection.classList.add('hidden');
-            return;
-        }
-        const companionIcons = { "家族連れ": "👪", "2人組": "👫", "友人": "🧑‍🤝‍🧑", "default": "👤" };
-        const ageIcons = { "若年層": "👦", "中年層": "👨‍💼", "高齢層": "👵", "default": "👤" };
-        const rankClasses = ["rank-1", "rank-2", "rank-3"];
-        const rankTitles = ["ペルソナ１", "ペルソナ２", "ペルソナ３"];
-        const totalAnswers = Number(scoreData['全回答数']);
-        personas.forEach((persona, index) => {
-            const clone = template.content.cloneNode(true);
-            const card = clone.querySelector('.border');
+                list["富山"].sort();
+                list["石川"].sort();
+                list["福井"].sort();
+                allFacilityLists[period] = list;
+            });
             
-            const rankBadge = card.querySelector('.rank-badge');
-            rankBadge.textContent = persona.rank;
-            rankBadge.classList.add(rankClasses[index]);
-            card.querySelector('h3').textContent = rankTitles[index];
-            
-            card.querySelector('.persona-companion').textContent = persona.companion;
-            card.querySelector('.persona-age').textContent = persona.age;
-            card.querySelector('.persona-region').textContent = persona.region;
-            card.querySelector('.persona-income').textContent = persona.income;
-            
-            card.querySelector('.persona-companion-icon').textContent = companionIcons[persona.companion] || companionIcons.default;
-            card.querySelector('.persona-age-icon').textContent = ageIcons[persona.age] || ageIcons.default;
-            
-            const certaintyPercent = totalAnswers > 0 ? (Number(persona.count) / totalAnswers) * 100 : 0;
-            const barWidthPercent = Math.min(100, (certaintyPercent / 25) * 100);
-            
-            const progressBar = card.querySelector('.progress-bar');
-            progressBar.style.width = `${barWidthPercent}%`;
-            progressBar.textContent = `${certaintyPercent.toFixed(1)}%`;
-            
-            card.querySelector('.persona-counts').textContent = `該当カウント: ${persona.count}件 / 全回答数 ${totalAnswers}件`;
-            
-            container.appendChild(clone);
-        });
-        personaSection.classList.remove('hidden');
-    }
+            // (NEW) 初期データ（富山・全期間）を設定
+            updateCurrentData();
 
-    function displayCustomerFeedback(facilityName) {
-        const satisfactionInfo = {
-            'とても満足': { icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z', color: 'green', label: 'とても満足' },
-            '満足': { icon: 'M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z', color: 'blue', label: '満足' },
-            'どちらでもない': { icon: 'M8 12h.01M12 12h.01M16 12h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z', color: 'yellow', label: 'どちらでもない' },
-            '不満': { icon: 'M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z', color: 'red', label: '不満' },
-            'とても不満': { icon: 'M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636', color: 'gray', label: 'とても不満' },
-            '感じた': { icon: 'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z', color: 'orange', label: '不便を感じた' },
-            'request': { icon: 'M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z', color: 'cyan', label: 'リクエスト' },
-            'nps': { icon: 'M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z', color: 'purple', label: 'NPSの理由' },
+            loadingIndicator.classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+            appContainer.classList.remove('hidden');
+            setupEventListeners();
+            
+            // (NEW) 初期表示
+            updateFacilityFilter();
+            renderSimpleRanking(currentOverallTab); // デフォルトタブ（施設別）ではないが、裏で描画しておく
+
+        } catch (error) {
+            loadingIndicator.innerHTML = `<p class="text-red-500 font-bold">エラーが発生しました。</p><p class="text-sm mt-2">${error.message}</p>`;
+            console.error(error);
+        }
+    };
+
+    // --- (NEW) Helper to update current data based on state ---
+    const updateCurrentData = () => {
+        // 期間で絞り込み、さらに回答数30件以上で絞り込む
+        const periodData = allSurveyData[currentPeriod].filter(d => d['回答数'] >= 30);
+        // 県で絞り込む
+        currentSurveyData = periodData.filter(d => d['県'] === currentPref);
+        // 施設リストを更新
+        currentFacilityList = allFacilityLists[currentPeriod][currentPref] || [];
+    };
+
+    // --- (NEW) Helper to update facility filter dropdown ---
+    const updateFacilityFilter = () => {
+        const facilityFilter = document.getElementById('facility-filter');
+        facilityFilter.innerHTML = '<option selected value="">施設を選択してください...</option>';
+        
+        currentFacilityList.forEach(facilityName => {
+            const optionElement = document.createElement('option');
+            optionElement.value = facilityName;
+            optionElement.textContent = facilityName;
+            facilityFilter.appendChild(optionElement);
+        });
+        
+        // 詳細表示をリセット
+        resetFacilityDetailView();
+    };
+
+    // --- (NEW) Helper to reset facility detail view ---
+    const resetFacilityDetailView = () => {
+        document.getElementById('facility-scores').classList.add('hidden');
+        document.getElementById('facility-detail-wrapper').classList.add('hidden');
+        document.getElementById('facility-prompt').classList.remove('hidden');
+    };
+    
+    // --- (MODIFIED) Function to set up event listeners ---
+    const setupEventListeners = () => {
+        const analysisBtn = document.getElementById('analysis-btn');
+        const analysisResults = document.getElementById('analysis-results');
+        const introSection = document.getElementById('intro-section');
+        
+        const mainTabs = [
+            { btn: document.getElementById('main-tab-facility'), panel: document.getElementById('panel-facility') },
+            { btn: document.getElementById('main-tab-segment'), panel: document.getElementById('panel-segment') },
+            { btn: document.getElementById('main-tab-overall'), panel: document.getElementById('panel-overall') }
+        ];
+
+        const npsTab = document.getElementById('nps-tab');
+        const satisfactionTab = document.getElementById('satisfaction-tab');
+        
+        const categoryFilter = document.getElementById('category-filter');
+        const detailFilter = document.getElementById('detail-filter');
+
+        const facilityFilter = document.getElementById('facility-filter');
+
+        const aboutButton = document.getElementById('about-button');
+        const aboutModal = document.getElementById('about-modal');
+        const closeAboutModalButton = document.getElementById('close-about-modal-button');
+
+        // --- Analysis Button Listener ---
+        analysisBtn.addEventListener('click', () => {
+            analysisResults.classList.toggle('hidden');
+            if (analysisResults.classList.contains('hidden')) {
+                introSection.classList.remove('mb-8');
+                 appContainer.style.justifyContent = 'center';
+            } else {
+                introSection.classList.add('mb-8');
+                 appContainer.style.justifyContent = 'flex-start';
+                // (NEW) 現在の県と期間で表示を更新
+                handleDataFilterChange();
+            }
+        });
+
+        // --- Main Tab Listeners ---
+        mainTabs.forEach(tab => {
+            tab.btn.addEventListener('click', () => {
+                mainTabs.forEach(t => {
+                    t.btn.classList.remove('active');
+                    t.panel.classList.remove('active');
+                });
+                tab.btn.classList.add('active');
+                tab.panel.classList.add('active');
+                
+                // タブ切り替え時に、そのタブの現在の状態で再描画
+                handleDataFilterChange();
+            });
+        });
+        
+        // --- (NEW) 県選択リスナー ---
+        document.querySelectorAll('#pref-selector .period-button').forEach(button => {
+            button.addEventListener('click', (e) => {
+                if (e.target.classList.contains('active')) return;
+                
+                currentPref = e.target.dataset.pref;
+                
+                // グループ内でアクティブ切り替え
+                document.querySelectorAll('#pref-selector .period-button').forEach(btn => btn.classList.remove('active'));
+                e.target.classList.add('active');
+                
+                // データ更新＆描画
+                handleDataFilterChange();
+            });
+        });
+
+        // --- (MODIFIED) 期間選択リスナー ---
+        document.querySelectorAll('.period-button-group[id^="period-selector-"]').forEach(group => {
+            group.querySelectorAll('.period-button').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('active')) return;
+                    
+                    currentPeriod = e.target.dataset.period;
+                    
+                    // すべての期間ボタンのグループでアクティブ状態を同期
+                    document.querySelectorAll(`.period-button[data-period]`).forEach(btn => btn.classList.remove('active'));
+                    document.querySelectorAll(`.period-button[data-period="${currentPeriod}"]`).forEach(btn => btn.classList.add('active'));
+
+                    // データ更新＆描画
+                    handleDataFilterChange();
+                });
+            });
+        });
+
+        // --- (NEW) フィルター変更時の共通処理 ---
+        const handleDataFilterChange = () => {
+            updateCurrentData(); // 期間と県でデータを絞り込む
+            
+            const activeTabId = document.querySelector('.main-tab-button.active').id;
+            
+            if (activeTabId === 'main-tab-facility') {
+                updateFacilityFilter(); // 施設リストを更新
+            } else if (activeTabId === 'main-tab-segment') {
+                renderSegmentRanking(); // セグメントランキングを更新
+                // 詳細フィルターもリセット
+                categoryFilter.value = "";
+                detailFilter.innerHTML = '<option selected value="">詳細を選択...</option>';
+                detailFilter.disabled = true;
+            } else if (activeTabId === 'main-tab-overall') {
+                renderSimpleRanking(currentOverallTab); // 全体ランキングを更新
+            }
         };
-        const colorClasses = {
-            green: { icon: 'text-green-500', label: 'text-green-800', bg: 'bg-green-100' },
-            blue: { icon: 'text-blue-500', label: 'text-blue-800', bg: 'bg-blue-100' },
-            yellow: { icon: 'text-yellow-500', label: 'text-yellow-800', bg: 'bg-yellow-100' },
-            red: { icon: 'text-red-500', label: 'text-red-800', bg: 'bg-red-100' },
-            gray: { icon: 'text-gray-500', label: 'text-gray-800', bg: 'bg-gray-200' },
-            orange: { icon: 'text-orange-500', label: 'text-orange-800', bg: 'bg-orange-100' },
-            cyan: { icon: 'text-cyan-500', label: 'text-cyan-800', bg: 'bg-cyan-100' },
-            purple: { icon: 'text-purple-500', label: 'text-purple-800', bg: 'bg-purple-100' },
+
+
+        // --- Overall Ranking Sub-Tab Listeners ---
+        npsTab.addEventListener('click', () => {
+            if (currentOverallTab !== 'nps') {
+                currentOverallTab = 'nps';
+                npsTab.classList.add('active');
+                satisfactionTab.classList.remove('active');
+                renderSimpleRanking('nps');
+            }
+        });
+
+        satisfactionTab.addEventListener('click', () => {
+            if (currentOverallTab !== 'satisfaction') {
+                currentOverallTab = 'satisfaction';
+                satisfactionTab.classList.add('active');
+                npsTab.classList.remove('active');
+                renderSimpleRanking('satisfaction');
+            }
+        });
+        
+        // --- Segment Ranking Filter Listeners ---
+        categoryFilter.addEventListener('change', () => {
+            const selectedCategory = categoryFilter.value;
+            detailFilter.innerHTML = '<option selected value="">詳細を選択...</option>';
+            document.getElementById('segment-ranking-container').innerHTML = '<p class="text-gray-500 text-center pt-10">詳細を選択してください。</p>';
+
+            if (selectedCategory) {
+                // (MODIFIED) filterOptions から詳細リストを取得
+                filterOptions[selectedCategory].forEach(option => {
+                    const optionElement = document.createElement('option');
+                    optionElement.value = option;
+                    optionElement.textContent = option; // (REVISED) '男'/'女' もそのまま表示
+                    detailFilter.appendChild(optionElement);
+                });
+                detailFilter.disabled = false;
+            } else {
+                detailFilter.disabled = true;
+                 document.getElementById('segment-ranking-container').innerHTML = '<p class="text-gray-500 text-center pt-10">はじめに分析軸を選択してください。</p>';
+            }
+        });
+        
+        detailFilter.addEventListener('change', renderSegmentRanking);
+
+        // --- (MODIFIED) Facility Detail Filter Listeners ---
+        facilityFilter.addEventListener('change', () => {
+            renderFacilityDetail(facilityFilter.value);
+        });
+        
+        // --- Modal Listeners (About only) ---
+        aboutButton.addEventListener('click', async () => {
+            try {
+                const response = await fetch('./aboutus.txt');
+                if (!response.ok) throw new Error('File not found');
+                const text = await response.text();
+                document.getElementById('about-text').innerHTML = text.replace(/\n/g, '<br>');
+                aboutModal.classList.remove('hidden');
+            } catch(e) {
+                document.getElementById('about-text').textContent = 'ファイルが読み込めませんでした。';
+                aboutModal.classList.remove('hidden');
+            }
+        });
+        closeAboutModalButton.addEventListener('click', () => aboutModal.classList.add('hidden'));
+        aboutModal.addEventListener('click', (e) => { if(e.target === aboutModal) aboutModal.classList.add('hidden'); });
+    };
+
+    // --- (MODIFIED) Ranking Card Drawing Function ---
+    const createRankingCard = (rank, name, score, detailOrPref, unit = '') => {
+        let rankClass = 'rank-default';
+        if (rank === 1) rankClass = 'rank-1';
+        if (rank === 2) rankClass = 'rank-2';
+        if (rank === 3) rankClass = 'rank-3';
+        if (rank === 4) rankClass = 'rank-4'; // (NEW)
+        if (rank === 5) rankClass = 'rank-5'; // (NEW)
+
+        const prefectureClasses = {
+            "富山": "pref-toyama",
+            "石川": "pref-ishikawa",
+            "福井": "pref-fukui",
         };
         
-        const filteredData = complainData
-            .filter(row => row && row[complainColIndex.FACILITY] === facilityName)
-            .sort((a, b) => new Date(b[complainColIndex.TIMESTAMP]) - new Date(a[complainColIndex.TIMESTAMP]));
-
-        const feedback = { service: [], facility: [], inconvenience: [], request: [], nps: [] };
+        let badgeHtml = '';
+        if (prefectureClasses[detailOrPref]) {
+            const prefClass = prefectureClasses[detailOrPref];
+            badgeHtml = `<span class="pref-badge ${prefClass}">${detailOrPref}</span>`;
+        } else {
+            // 属性バッジ
+            badgeHtml = `<span class="pref-badge bg-gray-200 text-gray-700">${detailOrPref}</span>`;
+        }
         
-        filteredData.forEach(row => {
-            const commonData = {
-                year: row[complainColIndex.BIRTH_YEAR] || '不明',
-                prefecture: row[complainColIndex.PREFECTURE] || '不明',
-                gender: row[complainColIndex.GENDER] || '不明'
-            };
+        const scoreDisplay = (typeof score === 'number')
+            ? (unit === '点' ? score.toFixed(2) : score.toFixed(1))
+            : 'N/A';
 
-            const serviceReason = row[complainColIndex.SERVICE_REASON];
-            if (serviceReason) feedback.service.push({ ...commonData, text: serviceReason, satisfaction: row[complainColIndex.SERVICE_SATISFACTION] });
+        return `
+            <div class="flex items-center bg-white p-3 rounded-xl border border-gray-200 shadow-sm">
+                <div class="rank-badge ${rankClass}">${rank}</div>
+                <div class="flex-grow ml-4 min-w-0"> <p class="font-semibold text-gray-700 truncate" title="${name}">${name}</p>
+                    <div class="mt-1">${badgeHtml}</div>
+                </div>
+                <div class="text-right flex-shrink-0 ml-2">
+                    <p class="text-2xl font-bold" style="color: var(--tifo-primary-dark);">${scoreDisplay}<span class="text-sm text-gray-500 ml-1">${unit}</span></p>
+                </div>
+            </div>
+        `;
+    };
 
-            const facilityReason = row[complainColIndex.FACILITY_REASON];
-            if (facilityReason) feedback.facility.push({ ...commonData, text: facilityReason, satisfaction: row[complainColIndex.FACILITY_SATISFACTION] });
-
-            const inconvenienceReason = row[complainColIndex.INCONVENIENCE_REASON];
-            if (row[complainColIndex.INCONVENIENCE] === '感じた' && inconvenienceReason) feedback.inconvenience.push({ ...commonData, text: inconvenienceReason, satisfaction: '感じた' });
+    // --- (NEW) Facility Attribute TOP5 List Drawing Function ---
+    const createAttributeRankingList = (topData) => {
+        if (topData.length === 0) {
+            return '<li class="text-gray-500 text-sm">データなし</li>';
+        }
+        return topData.map(([key, value], index) => {
+            const percentage = (Number(value) * 100).toFixed(1);
+            let rankClass = 'rank-default';
+            if (index === 0) rankClass = 'rank-1';
+            if (index === 1) rankClass = 'rank-2';
+            if (index === 2) rankClass = 'rank-3';
+            if (index === 3) rankClass = 'rank-4';
+            if (index === 4) rankClass = 'rank-5';
             
-            const requestText = row[complainColIndex.REQUEST];
-            if (requestText) feedback.request.push({ ...commonData, text: requestText });
-
-            const npsReason = row[complainColIndex.NPS_REASON];
-            if (npsReason) {
-                feedback.nps.push({ ...commonData, text: npsReason, score: row[complainColIndex.NPS_SCORE] });
-            }
-        });
-
-        const createCommentCard = (comment, type) => {
-            let infoKey = type === 'request' || type === 'nps' ? type : comment.satisfaction;
-            const info = satisfactionInfo[infoKey];
-            if (!info || !comment.text) return '';
-            
-            const colors = colorClasses[info.color];
-            
-            const isNps = type === 'nps';
-            const npsScoreBadge = isNps && comment.score !== undefined
-                ? `<span class="ml-auto text-xs font-bold px-2 py-1 rounded-full bg-purple-200 text-purple-800">評価: ${comment.score}点</span>`
-                : '';
             return `
-                <div class="bg-white p-4 rounded-lg border border-gray-200">
-                    <div class="flex items-start space-x-4">
-                        <div class="flex-shrink-0 mt-1">
-                            <svg class="w-6 h-6 ${colors.icon}" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${info.icon}"></path></svg>
-                        </div>
-                        <div class="flex-1">
-                            <div class="flex items-center">
-                                <p class="px-2 py-0.5 text-xs font-semibold rounded-full ${colors.bg} ${colors.label} inline-block">${info.label}</p>
-                                ${npsScoreBadge}
-                            </div>
-                            <p class="mt-2 text-gray-700 text-sm leading-relaxed">${comment.text}</p>
-                            <p class="mt-3 text-xs text-gray-500">${comment.year}年生まれ・${comment.prefecture}在住・${comment.gender}</p>
-                        </div>
+                <li class="flex items-center text-sm">
+                    <span class="rank-badge !w-6 !h-6 !text-xs ${rankClass}">${index + 1}</span>
+                    <span class="ml-2 flex-1 text-gray-700 truncate" title="${key}">${key}</span>
+                    <span class="font-bold w-16 text-right" style="color: var(--tifo-primary-dark);">${percentage}%</span>
+                </li>`;
+        }).join('');
+    };
+
+    // --- (NEW) Comment Card Drawing Function ---
+    const createCommentCard = (comment) => {
+        const stars = (rating) => {
+            let s = '';
+            const r = rating ? Math.round(rating) : 0;
+            for(let i=1; i<=5; i++) {
+                s += (i <= r) ? '★' : '☆';
+            }
+            return s;
+        };
+        
+        const satisfaction = comment['満足度（旅行全体）'];
+        const nps = comment['おすすめ度'];
+        
+        let npsColor = 'text-gray-600';
+        if (nps >= 9) npsColor = 'text-green-600 font-bold';
+        else if (nps <= 6) npsColor = 'text-red-600 font-bold';
+        else if (nps >= 7) npsColor = 'text-yellow-600 font-bold';
+
+        const date = comment['アンケート回答日'] ? comment['アンケート回答日'].split(' ')[0] : '';
+
+        return `
+            <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm space-y-2">
+                <p class="font-semibold text-gray-800">${comment['満足度理由'] || '(コメントなし)'}</p>
+                <div class="flex items-center justify-between text-sm text-gray-500 flex-wrap gap-y-1">
+                    <div class="flex items-center space-x-3">
+                        <span class="font-bold ${satisfaction ? 'text-yellow-500' : ''}">${satisfaction ? stars(satisfaction) : '満足度: -'}</span>
+                        <span class="${npsColor}">推奨度: ${nps !== null ? nps : '-'}</span>
+                    </div>
+                    <div class="text-right">
+                        <span>${comment['年代'] || ''} ${comment['性別'] || ''}</span>
+                        <span class="ml-3">${date}</span>
                     </div>
                 </div>
-            `;
-        };
+            </div>
+        `;
+    };
+    
+    // --- Data processing and rendering functions ---
+    const getSortableNPS = (value) => {
+        if (typeof value !== 'number') return -Infinity;
+        return Math.abs(value) <= 1 ? value * 100 : value;
+    };
 
-        const renderComments = (containerId, comments, type) => {
-            const container = document.getElementById(containerId);
-            if (comments.length > 0) {
-                container.innerHTML = comments.map(c => createCommentCard(c, type)).join('');
-            } else {
-                container.innerHTML = `<div class="text-center text-gray-500 py-16">該当するコメントはありません。</div>`;
-            }
-        };
+    // (MODIFIED)
+    const renderSimpleRanking = (type) => {
+        const rankingContainer = document.getElementById('ranking-container');
+        if (currentSurveyData.length === 0) {
+            rankingContainer.innerHTML = `<p class="text-gray-500 text-center pt-10">この条件のデータはありません。</p>`;
+            return;
+        }
 
-        renderComments('feedback-content-service', feedback.service, 'service');
-        renderComments('feedback-content-facility', feedback.facility, 'facility');
-        renderComments('feedback-content-inconvenience', feedback.inconvenience, 'inconvenience');
-        renderComments('feedback-content-request', feedback.request, 'request');
-        renderComments('feedback-content-nps', feedback.nps, 'nps');
-        
-        const tabs = document.querySelectorAll('.feedback-tab-button');
-        const contents = document.querySelectorAll('.feedback-content');
-        
-        tabs.forEach(tab => {
-            tab.addEventListener('click', (e) => {
-                e.preventDefault();
-                tabs.forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-                
-                contents.forEach(c => c.classList.add('hidden'));
-                const contentId = `feedback-content-${tab.dataset.tab}`;
-                document.getElementById(contentId).classList.remove('hidden');
-            });
+        const sortKey = type === 'nps' ? 'NPS' : '施設全体満足度';
+
+        const sortedData = [...currentSurveyData].sort((a, b) => {
+            const valA = type === 'nps' ? getSortableNPS(a[sortKey]) : (a[sortKey] || -Infinity);
+            const valB = type === 'nps' ? getSortableNPS(b[sortKey]) : (b[sortKey] || -Infinity);
+            return valB - valA;
         });
         
-        if (tabs.length > 0 && !document.querySelector('.feedback-tab-button.active')) {
-            tabs[0].classList.add('active');
-            contents.forEach(c => c.classList.add('hidden'));
-            document.getElementById(`feedback-content-${tabs[0].dataset.tab}`).classList.remove('hidden');
+        rankingContainer.innerHTML = sortedData
+            .map((item, index) => {
+                const scoreValue = item[sortKey];
+                const score = type === 'nps' ? getSortableNPS(scoreValue) : scoreValue;
+                // createRankingCard の detailOrPref には県名（currentPref）を入れるが、
+                // このランキングは既に県で絞られているため、バッジは不要かもしれない。
+                // だが、createRankingCard が県バッジを前提にしているので、そのまま県名を入れる。
+                return createRankingCard(index + 1, item['施設'], score, item['県'], type === 'satisfaction' ? '点' : '');
+            })
+            .join('');
+    };
+
+    // (MODIFIED)
+    const renderSegmentRanking = () => {
+        const segmentRankingContainer = document.getElementById('segment-ranking-container');
+        const filterValue = document.getElementById('detail-filter').value;
+        
+        if (currentSurveyData.length === 0) {
+            segmentRankingContainer.innerHTML = `<p class="text-gray-500 text-center pt-10">この条件のデータはありません。</p>`;
+            return;
         }
-    }
 
+        if (!filterValue) {
+            segmentRankingContainer.innerHTML = '<p class="text-gray-500 text-center pt-10">詳細を選択してください。</p>';
+            return;
+        }
 
-    function displayAnalysis(data) {
-        const facilityName = data[scoreFacilityKey];
-        document.getElementById('facility-title').textContent = `${facilityName} の分析結果`;
+        // (MODIFIED) 割合（%）でソート
+        const calculatedData = currentSurveyData.map(item => {
+            const segmentValue = item[filterValue];
+            const percentage = (typeof segmentValue === 'number') ? segmentValue * 100 : -1;
+            return { ...item, percentage: percentage };
+        }).sort((a, b) => b.percentage - a.percentage);
+
+        segmentRankingContainer.innerHTML = calculatedData
+            .map((item, index) => {
+                const score = item.percentage < 0 ? 'N/A' : item.percentage;
+                return createRankingCard(index + 1, item['施設'], score, item['県'], '%');
+            })
+            .join('');
+    };
+
+    // --- (MODIFIED) Render Facility Detail Function ---
+    const renderFacilityDetail = (facilityName) => {
+        const scoresContainer = document.getElementById('facility-scores');
+        const detailWrapper = document.getElementById('facility-detail-wrapper');
+        const prompt = document.getElementById('facility-prompt');
+        const commentsContainer = document.getElementById('facility-comments-container');
+
+        if (!facilityName) {
+            resetFacilityDetailView();
+            return;
+        }
+
+        // currentSurveyData (既に県・期間・回答数でフィルタ済み) から探す
+        const facilityData = currentSurveyData.find(item => item['施設'] === facilityName);
+
+        if (!facilityData) {
+            resetFacilityDetailView();
+            prompt.innerHTML = '<p class="text-red-500 text-center pt-10">この施設のデータが見つかりません。</p>';
+            return;
+        }
         
-        document.getElementById('ai-advice-facility-name').textContent = facilityName;
-        
-        document.getElementById('total-answers').textContent = data['全回答数'] ?? 'N/A';
-        const answersRank = getRank(data['全回答数'], '全回答数');
-        document.getElementById('total-answers-rank').textContent = `(全${answersRank.total}施設中 ${answersRank.rank}位)`;
-        
-        const nps = data.NPS;
+        scoresContainer.classList.remove('hidden');
+        detailWrapper.classList.remove('hidden');
+        prompt.classList.add('hidden');
+
+        // --- 1. NPSと満足度ゲージの描画 ---
+        const nps = facilityData['NPS'];
         const npsScore = nps !== null && nps !== undefined ? (Number(nps) * 100).toFixed(1) : 'N/A';
-        document.getElementById('nps-score').textContent = npsScore;
+        document.getElementById('facility-nps-score').textContent = npsScore;
         const normalizedNpsPercent = nps !== null && nps !== undefined ? (Number(nps) * 100 + 100) / 2 : 50;
-        document.getElementById('nps-bar-value').style.left = `calc(${normalizedNpsPercent}% - 0.375rem)`;
-        const npsRank = getRank(data.NPS, 'NPS');
-        document.getElementById('nps-rank').textContent = `(全${npsRank.total}施設中 ${npsRank.rank}位)`;
+        document.getElementById('facility-nps-bar').style.left = `calc(${normalizedNpsPercent}% - 0.375rem)`;
         
-        updateSatisfactionCard('product-satisfaction', data['商品・サービス満足度'], '商品・サービス満足度');
-        updateSatisfactionCard('facility-satisfaction', data['施設全体満足度'], '施設全体満足度');
-        updateSatisfactionCard('trip-satisfaction', data['旅全体満足度'], '旅全体満足度');
-        
-        displayPersonaAnalysis(data, facilityName);
-        displayCustomerFeedback(facilityName);
-        
-        const ageGroups = { '10代': data['10代'], '20代': data['20代'], '30代': data['30代'], '40代': data['40代'], '50代': data['50代'], '60代': data['60代'], '70代': data['70代'], '80代': data['80代'], '90代': data['90代'], '100代': data['100代'] };
-        const genderGroups = { '男性': data['男性'], '女性': data['女性'] };
-        const stayDurationGroups = { '日帰り': data['日帰り'], '1泊': data['1泊'], '2泊': data['2泊'], '3泊': data['3泊'], '4泊以上': data['4泊以上'] };
-        const companionGroups = { 'ひとり旅': data['自分ひとり'], '恋人と': data['恋人'], '友人と': data['友人'], '夫婦2人': data['夫婦2人'], '団体旅行': data['団体旅行'], '親戚と': data['親戚'], '親と': data['親'], '職場の同僚と': data['職場の同僚'], '家族(小学生以下)': data['小学生以下連れの家族'], '家族(中学生)': data['中学生以下連れの家族'], '家族(高校生)': data['高校生連れの家族'] };
-        const purposeGroups = { '宿でのんびり': data['宿でのんびり過ごす'], '温泉': data['温泉や露天風呂'], 'グルメ': data['地元の美味しいものを食べる'], '自然鑑賞': data['花見や紅葉などの自然鑑賞'], '名所・旧跡観光': data['名所、旧跡の観光'], 'テーマパーク': data['テーマパーク（遊園地、動物園、博物館など）'], '買い物': data['買い物、アウトレット'], 'イベント': data['お祭りやイベントへの参加・見物'], '鑑賞': data['スポーツ観戦や芸能鑑賞（コンサート等）'], 'アウトドア': data['アウトドア（海水浴、釣り、登山など）'], 'まちあるき': data['まちあるき、都市散策'], '体験': data['各種体験（手作り、果物狩りなど）'], 'スポーツ': data['スキー・スノボ、マリンスポーツ'] || data['その他スポーツ（ゴルフ、テニスなど）'], 'ドライブ': data['ドライブ・ツーリング'], '知人訪問': data['友人・親戚を尋ねる'], '仕事関係': data['出張など仕事関係'] };
-        const incomeGroups = {
-            '100万円未満': data['100万円未満'], '100-200万円': data['100万円以上 200万円未満'], '200-300万円': data['200万円以上 300万円未満'],
-            '300-400万円': data['300万円以上 400万円未満'], '400-500万円': data['400万円以上 500万円未満'], '500-600万円': data['500万円以上 600万円未満'],
-            '600-700万円': data['600万円以上 700万円未満'], '700-800万円': data['700万円以上 800万円未満'], '800-900万円': data['800万円以上 900万円未満'],
-            '900-1000万円': data['900万円以上 1,000万円未満'], '1000-1200万円': data['1,000万円以上 1,200万円未満'], '1200-1500万円': data['1,200万円以上 1,500万円未満'],
-            '1500万円以上': data['1,500万円以上']
-        };
-        const prefectureGroups = {
-            '北海道': data['北海道'], '青森県': data['青森県'], '岩手県': data['岩手県'], '宮城県': data['宮城県'], '秋田県': data['秋田県'], '山形県': data['山形県'], '福島県': data['福島県'],
-            '茨城県': data['茨城県'], '栃木県': data['栃木県'], '群馬県': data['群馬県'], '埼玉県': data['埼玉県'], '千葉県': data['千葉県'], '東京都': data['東京都'], '神奈川県': data['神奈川県'],
-            '新潟県': data['新潟県'], '富山県': data['富山県'], '石川県': data['石川県'], '福井県': data['福井県'], '山梨県': data['山梨県'], '長野県': data['長野県'], '岐阜県': data['岐阜県'],
-            '静岡県': data['静岡県'], '愛知県': data['愛知県'], '三重県': data['三重県'], '滋賀県': data['滋賀県'], '京都府': data['京都府'], '大阪府': data['大阪府'], '兵庫県': data['兵庫県'],
-            '奈良県': data['奈良県'], '和歌山県': data['和歌山県'], '鳥取県': data['鳥取県'], '島根県': data['島根県'], '岡山県': data['岡山県'], '広島県': data['広島県'], '山口県': data['山口県'],
-            '徳島県': data['徳島県'], '香川県': data['香川県'], '愛媛県': data['愛媛県'], '高知県': data['高知県'], '福岡県': data['福岡県'], '佐賀県': data['佐賀県'], '長崎県': data['長崎県'],
-            '熊本県': data['熊本県'], '大分県': data['大分県'], '宮崎県': data['宮崎県'], '鹿児島県': data['鹿児島県'], '沖縄県': data['沖縄県']
-        };
-        
-        renderRankingList('age-ranking', getTopN(ageGroups, 5));
-        renderRankingList('gender-ranking', getTopN(genderGroups, 5));
-        renderRankingList('stay-duration-ranking', getTopN(stayDurationGroups, 5));
-        renderRankingList('companion-ranking', getTopN(companionGroups, 5));
-        renderRankingList('purpose-ranking', getTopN(purposeGroups, 5));
-        renderRankingList('income-ranking', getTopN(incomeGroups, 5));
-        renderRankingList('prefecture-ranking', getTopN(prefectureGroups, 5));
-        
-        const adviceContainer = document.getElementById('tifo-advice-text');
-        let finalAdvice = '分析データを元に、さらなる改善点を探してみましょう！';
-        if (adviceLines.length > 0) {
-            const randomIndex = Math.floor(Math.random() * adviceLines.length);
-            finalAdvice = adviceLines[randomIndex];
-        }
-        adviceContainer.innerHTML = `<strong>${facilityName}さんへ</strong><br><br>${finalAdvice}`;
-    }
+        const satisfaction = facilityData['施設全体満足度'];
+        const satisfactionScore = (satisfaction && !isNaN(satisfaction)) ? Number(satisfaction) : 0;
+        document.getElementById('facility-satisfaction-score').textContent = satisfactionScore.toFixed(2);
+        document.getElementById('facility-satisfaction-bar').style.width = `${(satisfactionScore / 5) * 100}%`;
 
-    loadData();
+        // --- 2. 属性TOP5の描画 ---
+        for (const categoryKey in facilityAttributeCategories) {
+            const category = facilityAttributeCategories[categoryKey];
+            let segments = [];
+            category.columns.forEach(colName => {
+                if (facilityData.hasOwnProperty(colName)) {
+                    const value = facilityData[colName];
+                    if (typeof value === 'number' && value > 0) {
+                        segments.push([colName, value]); // [キー, 割合]
+                    }
+                }
+            });
+            
+            // 割合（value）で降順ソート
+            segments.sort((a, b) => b[1] - a[1]);
+            const top5Segments = segments.slice(0, 5);
+            
+            category.container.innerHTML = createAttributeRankingList(top5Segments);
+        }
+
+        // --- 3. 自由記述コメントの描画 (allCommentData から) ---
+        const comments = allCommentData.filter(comment => comment['回答場所'] === facilityName);
+        
+        if (comments.length === 0) {
+            commentsContainer.innerHTML = '<p class="text-gray-500 text-center pt-10">この施設のコメントはありません。</p>';
+        } else {
+            comments.sort((a, b) => {
+                const dateA = new Date(a['アンケート回答日'] || 0);
+                const dateB = new Date(b['アンケート回答日'] || 0);
+                return dateB - dateA;
+            });
+            
+            commentsContainer.innerHTML = comments
+                .map(comment => createCommentCard(comment))
+                .join('');
+        }
+    };
+
+
+    // --- Start the application ---
+    initializeApp();
 });
 </script>
 
