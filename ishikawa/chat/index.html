@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>観光アンケート チャットビューア</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <style>
+        :root {
+            --tifo-bg: #F7FAFC;
+            --tifo-text: #2D3748;
+            --tifo-primary: #4FD1C5;
+            --tifo-primary-dark: #38B2AC;
+            --tifo-card-border: #E2E8F0;
+            --tifo-card-bg: #FFFFFF;
+        }
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background-color: #E2E8F0; /* PC背景用 */
+            color: var(--tifo-text);
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+        }
+        
+        /* アプリコンテナ（スマホ風UI） */
+        #app-container {
+            width: 100%;
+            max-width: 480px;
+            height: 100vh;
+            background-color: var(--tifo-bg);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* ご指定のトンマナCSS */
+        .tifo-card {
+            background-color: var(--tifo-card-bg);
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--tifo-card-border);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: transform 0.2s;
+            cursor: pointer;
+        }
+        .tifo-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 20px -5px rgba(0, 0, 0, 0.1);
+        }
+        .tifo-button {
+            background-color: var(--tifo-primary);
+            color: white;
+            font-weight: bold;
+            padding: 0.75rem 1.5rem;
+            border-radius: 9999px;
+            border-bottom: 4px solid var(--tifo-primary-dark);
+            transition: all 0.2s ease;
+            text-align: center;
+            cursor: pointer;
+        }
+        .tifo-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px -3px rgba(79, 209, 197, 0.4);
+        }
+        .tifo-button:active {
+            transform: translateY(2px);
+            border-bottom-width: 2px;
+        }
+
+        /* === モーダル共通スタイル === */
+        .modal-overlay {
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(45, 55, 72, 0.75);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 50;
+            transition: opacity 0.3s ease;
+        }
+        .modal-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .modal-content {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 1.5rem;
+            width: 90%;
+            max-height: 85%;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+        .modal-overlay.hidden .modal-content {
+             transform: translateY(-20px);
+             opacity: 0;
+        }
+        .modal-body-scrollable {
+            flex-grow: 1;
+            overflow-y: auto;
+            min-height: 0;
+        }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #CBD5E0; border-radius: 10px; }
+
+        /* チャット画面固有のスタイル */
+        .chat-bg { background-color: #E2E8F0; } /* 爽やかなチャット背景 */
+        .chat-bubble-left {
+            background-color: #FFFFFF;
+            color: var(--tifo-text);
+            border-radius: 1rem 1rem 1rem 0;
+            padding: 0.75rem 1rem;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            max-width: 85%;
+            width: fit-content;
+            word-break: break-word;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+        .chat-bubble-right {
+            background-color: var(--tifo-primary);
+            color: white;
+            border-radius: 1rem 1rem 0 1rem;
+            padding: 0.75rem 1rem;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            max-width: 85%;
+            width: fit-content;
+            margin-left: auto;
+            word-break: break-word;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        /* 入力中アニメーション */
+        .typing-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 0.5rem 0.5rem;
+        }
+        .typing-indicator span {
+            width: 6px;
+            height: 6px;
+            background-color: #A0AEC0;
+            border-radius: 50%;
+            animation: blink 1.4s infinite both;
+        }
+        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes blink { 0% { opacity: 0.2; transform: scale(0.8); } 20% { opacity: 1; transform: scale(1.2); } 100% { opacity: 0.2; transform: scale(0.8); } }
+
+        /* 画面切り替え用のクラス */
+        .screen {
+            display: none;
+            flex-direction: column;
+            height: 100%;
+        }
+        .screen.active {
+            display: flex;
+        }
+
+        /* 属性テーブル */
+        .attr-table { width: 100%; border-collapse: collapse; }
+        .attr-table th { text-align: left; padding: 0.75rem 0; color: #718096; font-weight: normal; font-size: 0.875rem; border-bottom: 1px solid #EDF2F7; width: 40%;}
+        .attr-table td { padding: 0.75rem 0; color: var(--tifo-text); font-weight: bold; border-bottom: 1px solid #EDF2F7; }
+    </style>
+</head>
+<body>
+
+<div id="app-container">
+
+    <!-- 1. 施設選択画面 -->
+    <div id="screen-facility" class="screen bg-white">
+        <header class="p-4 border-b bg-[var(--tifo-primary)] flex justify-center items-center shadow-sm z-10 relative text-white">
+            <h1 class="text-xl font-bold">TIFO Chat</h1>
+        </header>
+        <div class="p-4 overflow-y-auto custom-scrollbar flex-1 bg-gray-50 flex flex-col gap-4" id="facility-list">
+            <!-- JSで動的に施設カードを生成 -->
+        </div>
+    </div>
+
+    <!-- 2. チャットユーザ（回答者）選択画面 -->
+    <div id="screen-users" class="screen bg-white">
+        <header class="p-4 border-b bg-[var(--tifo-primary)] flex justify-center items-center shadow-sm z-10 relative text-white">
+            <button onclick="setRoute('facility')" class="absolute left-4 text-white hover:text-gray-100">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+            </button>
+            <h1 class="text-xl font-bold w-4/5 text-center truncate" id="users-header-title">回答者一覧</h1>
+        </header>
+        <div class="p-4 overflow-y-auto custom-scrollbar flex-1 bg-gray-50 flex flex-col gap-3" id="user-list">
+            <!-- JSで動的にユーザリストを生成 -->
+        </div>
+    </div>
+
+    <!-- 3. メッセージ（チャット）画面 -->
+    <div id="screen-chat" class="screen chat-bg">
+        <header class="p-3 border-b bg-[var(--tifo-primary)] flex items-center justify-between shadow-sm z-10 relative text-white">
+            <div class="flex items-center gap-1 overflow-hidden w-3/5">
+                <button onclick="navigate('users', currentFacility)" class="text-white hover:text-gray-100 flex-shrink-0 p-1">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                </button>
+                <div class="flex items-center gap-2 cursor-pointer hover:bg-white/10 p-1 rounded-lg transition-colors overflow-hidden flex-1" onclick="openProfileModal()">
+                    <div id="chat-header-avatar" class="flex-shrink-0"></div>
+                    <h1 class="text-md font-bold leading-tight truncate" id="chat-header-name">ユーザ名</h1>
+                </div>
+            </div>
+            <div class="text-right w-2/5 pl-2 flex flex-col justify-center">
+                <span class="text-[0.65rem] text-white/70 leading-none mb-0.5">施設名</span>
+                <p class="text-xs font-bold truncate leading-tight" id="chat-header-facility">施設名</p>
+            </div>
+        </header>
+        
+        <div class="p-4 overflow-y-auto custom-scrollbar flex-1 flex flex-col gap-4" id="chat-messages">
+            <!-- チャットメッセージがここに追加される -->
+        </div>
+
+        <!-- 疑似入力エリア -->
+        <div class="p-3 bg-white border-t flex items-center gap-2">
+            <button class="p-2 text-gray-400">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+            </button>
+            <div class="flex-1 bg-gray-100 rounded-full px-4 py-2 text-sm text-gray-400 border border-gray-200">
+                自動再生中... (入力不可)
+            </div>
+            <button class="p-2 text-[var(--tifo-primary)] opacity-50 cursor-not-allowed">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- 属性モーダル -->
+    <div id="modal-profile" class="modal-overlay hidden">
+        <div class="modal-content relative">
+            <button onclick="closeProfileModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 bg-gray-100 rounded-full p-1">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+            
+            <div class="flex flex-col items-center mb-6">
+                <div id="modal-avatar" class="mb-3"></div>
+                <h2 class="text-2xl font-bold text-gray-800" id="modal-name">氏名/属性</h2>
+            </div>
+
+            <div class="modal-body-scrollable custom-scrollbar">
+                <h3 class="text-sm font-bold text-[var(--tifo-primary)] mb-2 uppercase tracking-wide border-b pb-1">回答者属性</h3>
+                <table class="attr-table">
+                    <tbody id="modal-attr-body">
+                        <!-- JSで属性を挿入 -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="mt-6">
+                 <button class="tifo-button w-full" onclick="closeProfileModal()">閉じる</button>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // --- 状態管理 ---
+    let surveyData = [];
+    let facilities = [];
+    let currentFacility = '';
+    let currentUser = null;
+    let chatCancelToken = { cancelled: false };
+
+    // --- データ読み込みとパース処理 ---
+    async function loadData() {
+        try {
+            const res = await fetch('../milli_complain.tsv');
+            if (!res.ok) throw new Error("HTTP error " + res.status);
+            const text = await res.text();
+            
+            Papa.parse(text, {
+                delimiter: "\t",
+                skipEmptyLines: true,
+                complete: function(results) {
+                    processData(results);
+                    handleHashChange(); // 初期ルーティング
+                }
+            });
+        } catch (e) {
+            console.warn("TSV読み込み失敗、ダミーデータを使用します:", e);
+            // 開発環境などでファイルが取得できない場合のフォールバックデータ
+            surveyData = [
+                {
+                    id: "u1", timestamp: "5/10/2026 16:25:22", rawDate: new Date("5/10/2026 16:25:22"), facility: "A STORE WAJIMA", gender: "女", birth_year: 1996, ageGroup: "30代", pref: "石川県", city: "金沢市", income: "900万円以上 1,000万円未満", companion: "夫婦2人", purpose: "ポケふた",
+                    stay_total: "日帰り", stay_ishikawa: "4泊以上", stay_area: "金沢エリア", transport_to_ishikawa: "自家用車", transport_to_facility: "自家用車", visit_count: "初めて", info_source: "インターネット・アプリ", revisit_intent: "また行きたい（1年以内）",
+                    service_satisfaction: "とても満足", service_reason: "品揃えが豊富で、見ているだけでも楽しかったです。", facility_satisfaction: "とても満足", facility_reason: "お店の雰囲気がおしゃれで、とても居心地が良かったです。", inconvenience: "感じなかった", inconvenience_reason: "", facility_nps: 7, facility_nps_reason: "ポケふたをもう少し増やして欲しいですね。", pref_nps: 10, pref_nps_reason: "景色も良くてご飯も美味しいので、ぜひ薦めたいです！"
+                }
+            ];
+            facilities = [...new Set(surveyData.map(d => d.facility))];
+            handleHashChange();
+        }
+    }
+
+    function processData(parsedData) {
+        if (parsedData.data.length < 2) return;
+        const headers = parsedData.data[0];
+        const getIdx = (keyword) => headers.findIndex(h => typeof h === 'string' && h.includes(keyword));
+
+        const idx = {
+            timestamp: getIdx("タイムスタンプ"),
+            facility: getIdx("施設"),
+            gender: getIdx("性別"),
+            birth_year: getIdx("生まれた年"),
+            pref: getIdx("都道府県"),
+            city: getIdx("市区町村"),
+            income: getIdx("世帯年収"),
+            companion: getIdx("どなたと"),
+            purpose: getIdx("訪問目的"),
+            stay_total: getIdx("全行程での宿泊数"),
+            stay_ishikawa: getIdx("石川県内での宿泊数"),
+            stay_area: getIdx("宿泊エリアをお答えください"),
+            transport_to_ishikawa: getIdx("石川県外から"),
+            transport_to_facility: getIdx("当施設 を訪れる際に利用した主な交通手段"),
+            visit_count: getIdx("何度訪れた"),
+            info_source: getIdx("参考にした情報源"),
+            revisit_intent: getIdx("再び石川県を訪れたい"),
+            service_satisfaction: getIdx("商品・サービスの満足度"),
+            service_reason: getIdx("(サービス)"), 
+            facility_satisfaction: getIdx("施設全体の満足度"),
+            facility_reason: getIdx("(施設全体)"),
+            inconvenience: getIdx("不便を感じたり"),
+            inconvenience_reason: getIdx("不便を感じたり、困ったことについて具体的に"),
+            facility_nps: getIdx("当施設 へのお出かけを、どのくらい家族や友人に薦めたい"),
+            facility_nps_reason: getIdx("当施設 の飲食、土産、アクティビティについて、ご自由にご意見"), 
+            pref_nps: getIdx("石川県への旅行を、どのくらい家族や友人に勧めたい"),
+            pref_nps_reason: getIdx("人に薦めたいと感じたものとその理由"),
+        };
+
+        surveyData = [];
+        const currentYear = new Date().getFullYear();
+
+        for (let i = 1; i < parsedData.data.length; i++) {
+            const row = parsedData.data[i];
+            if (row.length < 5 || !row[idx.facility]) continue;
+
+            const birth_year = row[idx.birth_year];
+            let ageGroup = "不明";
+            if (birth_year && !isNaN(parseInt(birth_year))) {
+                 const age = currentYear - parseInt(birth_year);
+                 const dec = Math.floor(age / 10) * 10;
+                 if (dec < 10) ageGroup = "10歳未満";
+                 else if (dec >= 70) ageGroup = "70代以上";
+                 else ageGroup = `${dec}代`;
+            }
+
+            const getVal = (index) => index !== -1 && row[index] ? row[index] : "";
+
+            surveyData.push({
+                id: "u" + i,
+                timestamp: getVal(idx.timestamp),
+                rawDate: getVal(idx.timestamp) ? new Date(getVal(idx.timestamp)) : new Date(0),
+                facility: getVal(idx.facility),
+                gender: getVal(idx.gender),
+                birth_year: getVal(idx.birth_year),
+                ageGroup: ageGroup,
+                pref: getVal(idx.pref),
+                city: getVal(idx.city),
+                income: getVal(idx.income),
+                companion: getVal(idx.companion),
+                purpose: getVal(idx.purpose),
+                stay_total: getVal(idx.stay_total),
+                stay_ishikawa: getVal(idx.stay_ishikawa),
+                stay_area: getVal(idx.stay_area),
+                transport_to_ishikawa: getVal(idx.transport_to_ishikawa),
+                transport_to_facility: getVal(idx.transport_to_facility),
+                visit_count: getVal(idx.visit_count),
+                info_source: getVal(idx.info_source),
+                revisit_intent: getVal(idx.revisit_intent),
+                service_satisfaction: getVal(idx.service_satisfaction) || "無回答",
+                service_reason: getVal(idx.service_reason),
+                facility_satisfaction: getVal(idx.facility_satisfaction) || "無回答",
+                facility_reason: getVal(idx.facility_reason),
+                inconvenience: getVal(idx.inconvenience) || "無回答",
+                inconvenience_reason: getVal(idx.inconvenience_reason),
+                facility_nps: getVal(idx.facility_nps) || "無回答",
+                facility_nps_reason: getVal(idx.facility_nps_reason),
+                pref_nps: getVal(idx.pref_nps) || "無回答",
+                pref_nps_reason: getVal(idx.pref_nps_reason)
+            });
+        }
+        facilities = [...new Set(surveyData.map(d => d.facility))].filter(Boolean);
+    }
+
+    // --- ユーティリティ ---
+    const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+    function getAvatarSvg(gender, ageGroup, size = 48) {
+        const isFemale = gender === '女';
+        const colors = isFemale ? ['#FED7E2', '#ED64A6'] : ['#BEE3F8', '#4299E1'];
+        
+        let emoji = isFemale ? '👩' : '👨'; 
+        
+        if (isFemale) {
+            if (ageGroup.includes('10')) emoji = '👧';
+            else if (ageGroup.includes('20')) emoji = '👩‍🦰';
+            else if (ageGroup.includes('30')) emoji = '👩';
+            else if (ageGroup.includes('40')) emoji = '👩‍💼';
+            else if (ageGroup.includes('50')) emoji = '🧓';
+            else if (ageGroup.includes('60') || ageGroup.includes('70')) emoji = '👵';
+        } else {
+            if (ageGroup.includes('10')) emoji = '👦';
+            else if (ageGroup.includes('20')) emoji = '👱‍♂️';
+            else if (ageGroup.includes('30')) emoji = '👨';
+            else if (ageGroup.includes('40')) emoji = '👨‍💼';
+            else if (ageGroup.includes('50')) emoji = '👨‍🦳';
+            else if (ageGroup.includes('60') || ageGroup.includes('70')) emoji = '👴';
+        }
+
+        return `
+        <svg width="${size}" height="${size}" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="50" cy="50" r="50" fill="${colors[0]}" />
+            <circle cx="50" cy="50" r="45" fill="white" opacity="0.5" />
+            <text x="50" y="55" font-size="50" dominant-baseline="middle" text-anchor="middle">${emoji}</text>
+        </svg>`;
+    }
+
+    // --- 画面遷移とURLルーティング制御 ---
+    window.addEventListener('hashchange', handleHashChange);
+
+    function setRoute(route, param = null) {
+        if (route === 'facility') {
+            window.location.hash = ''; // ハッシュをクリアして施設一覧へ
+        } else if (route === 'users') {
+            window.location.hash = encodeURIComponent(param); // ハッシュを施設名にして回答者一覧へ
+        } else if (route === 'chat') {
+            navigate('chat', param); // チャット画面はハッシュを変えずに表示（ブラウザバックでユーザ一覧に戻るため）
+        }
+    }
+
+    function handleHashChange() {
+        const hash = decodeURIComponent(window.location.hash.substring(1));
+        if (hash && facilities.includes(hash)) {
+            navigate('users', hash);
+        } else {
+            navigate('facility');
+        }
+    }
+
+    function navigate(screenName, param = null) {
+        // 全画面非表示
+        document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
+        
+        // チャット進行中の場合はキャンセル
+        chatCancelToken.cancelled = true; 
+
+        if (screenName === 'facility') {
+            document.getElementById('screen-facility').classList.add('active');
+            renderFacilities();
+        } else if (screenName === 'users') {
+            if (param) currentFacility = param;
+            document.getElementById('screen-users').classList.add('active');
+            document.getElementById('users-header-title').innerText = currentFacility;
+            renderUsers();
+        } else if (screenName === 'chat') {
+            currentUser = surveyData.find(u => u.id === param);
+            document.getElementById('screen-chat').classList.add('active');
+            startChat();
+        }
+    }
+
+    // --- 描画処理 ---
+    function renderFacilities() {
+        const container = document.getElementById('facility-list');
+        container.innerHTML = '';
+        
+        // 回答数順にソート
+        const facilityCounts = facilities.map(fac => {
+            return {
+                name: fac,
+                count: surveyData.filter(d => d.facility === fac).length
+            };
+        }).sort((a, b) => b.count - a.count);
+
+        facilityCounts.forEach(facData => {
+            const fac = facData.name;
+            const count = facData.count;
+            const el = document.createElement('div');
+            el.className = 'bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4 cursor-pointer hover:bg-gray-50 transition-colors';
+            el.onclick = () => setRoute('users', fac);
+            el.innerHTML = `
+                <div class="flex-1 min-w-0">
+                    <h3 class="font-bold text-lg text-gray-800 truncate">${fac}</h3>
+                </div>
+                <div class="flex flex-col items-end gap-1">
+                    <span class="text-xs text-gray-400">新着</span>
+                    <span class="bg-red-500 text-white text-xs font-bold px-2.5 py-0.5 rounded-full">${count}件</span>
+                </div>
+            `;
+            container.appendChild(el);
+        });
+    }
+
+    function renderUsers() {
+        const container = document.getElementById('user-list');
+        container.innerHTML = '';
+        
+        // 施設で絞り込み、タイムスタンプが新しい順（降順）にソート
+        const users = surveyData
+            .filter(d => d.facility === currentFacility)
+            .sort((a, b) => b.rawDate - a.rawDate);
+        
+        users.forEach(user => {
+            const el = document.createElement('div');
+            el.className = 'bg-white p-3 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-3 cursor-pointer hover:bg-blue-50 transition-colors';
+            el.onclick = () => setRoute('chat', user.id);
+            
+            const avatar = getAvatarSvg(user.gender, user.ageGroup, 48);
+            
+            // タイムスタンプの表示フォーマットを日付のみに変更（例: 5/10）
+            let timeStr = '';
+            if (user.timestamp) {
+                const d = new Date(user.timestamp);
+                if (!isNaN(d.getTime())) {
+                    timeStr = `${d.getMonth() + 1}/${d.getDate()}`;
+                } else {
+                    timeStr = user.timestamp.split(' ')[0] || user.timestamp; // パース失敗時は前半だけ表示
+                }
+            }
+
+            // --- タグの生成 ---
+            const tags = [];
+            // 不便タグ
+            if (user.inconvenience && user.inconvenience !== "感じなかった" && user.inconvenience !== "無回答") {
+                tags.push('<span class="bg-yellow-100 text-yellow-800 text-[0.65rem] px-1.5 py-0.5 rounded border border-yellow-200 font-bold leading-none">不便</span>');
+            }
+            // 不満タグ (サービス満足度 または 施設満足度に「不満」が含まれる場合)
+            if ((user.service_satisfaction && user.service_satisfaction.includes("不満")) ||
+                (user.facility_satisfaction && user.facility_satisfaction.includes("不満"))) {
+                tags.push('<span class="bg-red-100 text-red-800 text-[0.65rem] px-1.5 py-0.5 rounded border border-red-200 font-bold leading-none">不満</span>');
+            }
+            // NPSタグ
+            if (user.facility_nps && user.facility_nps !== "無回答") {
+                const nps = parseInt(user.facility_nps);
+                let npsColor = "bg-gray-100 text-gray-700 border-gray-200"; // Detractor (批判者)
+                if (nps >= 9) npsColor = "bg-green-100 text-green-800 border-green-200"; // Promoter (推奨者)
+                else if (nps >= 7) npsColor = "bg-blue-100 text-blue-800 border-blue-200"; // Passive (中立者)
+                tags.push(`<span class="${npsColor} text-[0.65rem] px-1.5 py-0.5 rounded border font-bold leading-none">NPS ${user.facility_nps}</span>`);
+            }
+
+            // --- 文字数のカウント ---
+            const textLen = (user.service_reason || "").length +
+                            (user.facility_reason || "").length +
+                            (user.inconvenience_reason || "").length +
+                            (user.facility_nps_reason || "").length +
+                            (user.pref_nps_reason || "").length;
+            
+            el.innerHTML = `
+                <div class="flex-shrink-0">${avatar}</div>
+                <div class="flex-1 min-w-0">
+                    <div class="flex justify-between items-baseline mb-0.5">
+                        <h4 class="font-bold text-gray-800 text-md truncate">${user.ageGroup} ${user.gender}</h4>
+                        <span class="text-xs text-gray-400 flex-shrink-0 ml-2">${timeStr}</span>
+                    </div>
+                    <p class="text-xs text-gray-500 truncate">同行者: ${user.companion} / ${user.pref}</p>
+                    <div class="mt-1.5 flex items-center justify-between gap-1">
+                        <div class="flex flex-wrap gap-1 items-center">
+                            ${tags.join('')}
+                        </div>
+                        <span class="text-[0.65rem] text-gray-400 flex-shrink-0 flex items-center gap-0.5" title="自由記述の合計文字数">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                            ${textLen}文字
+                        </span>
+                    </div>
+                </div>
+                <div class="text-[var(--tifo-primary)] ml-1 flex-shrink-0">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+                </div>
+            `;
+            container.appendChild(el);
+        });
+    }
+
+    // --- チャットロジック ---
+    async function startChat() {
+        // ヘッダー情報セット
+        document.getElementById('chat-header-avatar').innerHTML = getAvatarSvg(currentUser.gender, currentUser.ageGroup, 32);
+        document.getElementById('chat-header-name').innerText = `${currentUser.ageGroup} ${currentUser.gender}`;
+        document.getElementById('chat-header-facility').innerText = currentFacility;
+        
+        const chatBox = document.getElementById('chat-messages');
+        chatBox.innerHTML = ''; // 読み込み完了テキストを削除
+        
+        // キャンセルトークンをリセット
+        chatCancelToken.cancelled = false;
+        const currentToken = chatCancelToken;
+
+        // シナリオ定義
+        const scenario = [
+            { 
+                q: "サービスの満足度はどうでしたか？", 
+                a: u => [ `「${u.service_satisfaction}」です。`, u.service_reason ? `理由は、${u.service_reason}` : null ] 
+            },
+            { 
+                q: "施設全体の満足度はどうでしたか？", 
+                a: u => [ `施設全体も「${u.facility_satisfaction}」ですね。`, u.facility_reason ? `${u.facility_reason}` : null ] 
+            },
+            { 
+                q: "何か不便はなかったですか？", 
+                a: u => [ `不便は「${u.inconvenience}」。`, u.inconvenience_reason ? `具体的には、${u.inconvenience_reason}` : null ] 
+            },
+            { 
+                q: "この施設の友人等へのオススメ度は0～10でどのくらいですか？", 
+                a: u => [ `オススメ度は「${u.facility_nps}」です！`, u.facility_nps_reason ? `「${u.facility_nps_reason}」という理由からです。` : null ] 
+            },
+            { 
+                q: "石川県の旅行の友人等へのオススメ度は0～10でどのくらいですか？", 
+                a: u => [ `石川県全体へのオススメ度は「${u.pref_nps}」です！`, u.pref_nps_reason ? `理由は、${u.pref_nps_reason}` : null ] 
+            }
+        ];
+
+        await sleep(500);
+
+        for (let step of scenario) {
+            if (currentToken.cancelled) return;
+
+            // 質問（右側：システム/インタビュアー）
+            appendMessage('right', step.q);
+            await sleep(600);
+            if (currentToken.cancelled) return;
+
+            // 入力中アニメーション（左側：回答者）
+            const typingId = showTyping();
+            await sleep(1500); // 1.5秒のアニメーション
+            if (currentToken.cancelled) return;
+            removeTyping(typingId);
+
+            // 回答（左側）
+            const answers = step.a(currentUser).filter(Boolean);
+            for (let ans of answers) {
+                appendMessage('left', ans);
+                await sleep(800);
+                if (currentToken.cancelled) return;
+            }
+            
+            await sleep(1200); // 次の質問への間隔
+        }
+    }
+
+    function appendMessage(side, text) {
+        const chatBox = document.getElementById('chat-messages');
+        const wrapper = document.createElement('div');
+        wrapper.className = `flex flex-col ${side === 'right' ? 'items-end' : 'items-start'} mb-2`;
+        
+        const bubble = document.createElement('div');
+        bubble.className = side === 'right' ? 'chat-bubble-right' : 'chat-bubble-left';
+        
+        // 左側の場合はアバターを横に添える（LINE風）
+        if (side === 'left') {
+            const flexRow = document.createElement('div');
+            flexRow.className = 'flex items-end gap-2 max-w-full';
+            
+            const avatarWrap = document.createElement('div');
+            avatarWrap.className = 'flex-shrink-0 mb-1';
+            avatarWrap.innerHTML = getAvatarSvg(currentUser.gender, currentUser.ageGroup, 28);
+            
+            bubble.innerHTML = text;
+            flexRow.appendChild(avatarWrap);
+            flexRow.appendChild(bubble);
+            wrapper.appendChild(flexRow);
+        } else {
+            bubble.innerHTML = text;
+            wrapper.appendChild(bubble);
+        }
+
+        // アニメーション追加
+        wrapper.style.opacity = 0;
+        wrapper.style.transform = 'translateY(10px)';
+        wrapper.style.transition = 'all 0.3s ease';
+        
+        chatBox.appendChild(wrapper);
+        
+        // リフロー後にスタイル適用
+        requestAnimationFrame(() => {
+            wrapper.style.opacity = 1;
+            wrapper.style.transform = 'translateY(0)';
+            scrollToBottom();
+        });
+    }
+
+    function showTyping() {
+        const id = 'typing-' + Date.now();
+        const chatBox = document.getElementById('chat-messages');
+        
+        const wrapper = document.createElement('div');
+        wrapper.id = id;
+        wrapper.className = 'flex items-end gap-2 max-w-full mb-2';
+        
+        const avatarWrap = document.createElement('div');
+        avatarWrap.className = 'flex-shrink-0 mb-1';
+        avatarWrap.innerHTML = getAvatarSvg(currentUser.gender, currentUser.ageGroup, 28);
+        
+        const bubble = document.createElement('div');
+        bubble.className = 'chat-bubble-left typing-indicator';
+        bubble.innerHTML = '<span></span><span></span><span></span>';
+        
+        wrapper.appendChild(avatarWrap);
+        wrapper.appendChild(bubble);
+        chatBox.appendChild(wrapper);
+        scrollToBottom();
+        
+        return id;
+    }
+
+    function removeTyping(id) {
+        const el = document.getElementById(id);
+        if (el) el.remove();
+    }
+
+    function scrollToBottom() {
+        const chatBox = document.getElementById('chat-messages');
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    // --- モーダル制御 ---
+    function openProfileModal() {
+        if (!currentUser) return;
+        
+        document.getElementById('modal-avatar').innerHTML = getAvatarSvg(currentUser.gender, currentUser.ageGroup, 80);
+        document.getElementById('modal-name').innerText = `${currentUser.ageGroup} ${currentUser.gender}`;
+        
+        const tbody = document.getElementById('modal-attr-body');
+        
+        const attrList = [
+            { label: '生まれ年', value: currentUser.birth_year ? currentUser.birth_year + '年' : null },
+            { label: '居住地', value: currentUser.pref ? `${currentUser.pref} ${currentUser.city || ''}` : null },
+            { label: '同行者', value: currentUser.companion },
+            { label: '訪問目的', value: currentUser.purpose },
+            { label: '旅行の宿泊数', value: currentUser.stay_total },
+            { label: '石川県内宿泊数', value: currentUser.stay_ishikawa },
+            { label: '石川県内エリア', value: currentUser.stay_area },
+            { label: '県外からの交通', value: currentUser.transport_to_ishikawa },
+            { label: '当施設への交通', value: currentUser.transport_to_facility },
+            { label: '来訪回数', value: currentUser.visit_count },
+            { label: '参考情報源', value: currentUser.info_source },
+            { label: '再訪意向', value: currentUser.revisit_intent },
+            { label: '世帯年収', value: currentUser.income }
+        ];
+
+        tbody.innerHTML = attrList.map(attr => {
+            if (attr.value && attr.value !== 'undefined' && String(attr.value).trim() !== '') {
+                 return `<tr><th>${attr.label}</th><td>${attr.value}</td></tr>`;
+            }
+            return '';
+        }).join('');
+
+        document.getElementById('modal-profile').classList.remove('hidden');
+    }
+
+    function closeProfileModal() {
+        document.getElementById('modal-profile').classList.add('hidden');
+    }
+
+    // モーダル背景クリックで閉じる
+    document.getElementById('modal-profile').addEventListener('click', function(e) {
+        if (e.target === this) closeProfileModal();
+    });
+
+    // 初期化（TSVデータの読み込みを開始）
+    window.onload = () => {
+        loadData();
+    };
+
+</script>
+</body>
+</html>
