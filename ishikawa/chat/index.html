@@ -113,15 +113,21 @@
 
         /* チャット画面固有のスタイル */
         .chat-bg { background-color: #E2E8F0; } /* 爽やかなチャット背景 */
+        
+        /* 
+           【ふきだしの潰れ対策】 
+           max-widthを75%に固定。親要素の w-full と組み合わせることで、
+           テキスト長に応じた自然な折り返し位置を確保します。
+        */
         .chat-bubble-left {
             background-color: #FFFFFF;
             color: var(--tifo-text);
             border-radius: 1rem 1rem 1rem 0;
             padding: 0.75rem 1rem;
             box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-            max-width: 85%;
+            max-width: 75%;
             width: fit-content;
-            word-break: break-word;
+            word-break: break-all;
             font-size: 0.95rem;
             line-height: 1.5;
         }
@@ -131,10 +137,10 @@
             border-radius: 1rem 1rem 0 1rem;
             padding: 0.75rem 1rem;
             box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-            max-width: 85%;
+            max-width: 75%;
             width: fit-content;
             margin-left: auto;
-            word-break: break-word;
+            word-break: break-all;
             font-size: 0.95rem;
             line-height: 1.5;
         }
@@ -204,7 +210,7 @@
     <div id="screen-chat" class="screen chat-bg">
         <header class="p-3 border-b bg-[var(--tifo-primary)] flex items-center justify-between shadow-sm z-10 relative text-white">
             <div class="flex items-center gap-1 overflow-hidden w-3/5">
-                <button onclick="navigate('users', currentFacility)" class="text-white hover:text-gray-100 flex-shrink-0 p-1">
+                <button onclick="setRoute('users', currentFacility)" class="text-white hover:text-gray-100 flex-shrink-0 p-1">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
                 </button>
                 <div class="flex items-center gap-2 cursor-pointer hover:bg-white/10 p-1 rounded-lg transition-colors overflow-hidden flex-1" onclick="openProfileModal()">
@@ -294,7 +300,26 @@
                 {
                     id: "u1", timestamp: "5/10/2026 16:25:22", rawDate: new Date("5/10/2026 16:25:22"), facility: "A STORE WAJIMA", gender: "女", birth_year: 1996, ageGroup: "30代", pref: "石川県", city: "金沢市", income: "900万円以上 1,000万円未満", companion: "夫婦2人", purpose: "ポケふた",
                     stay_total: "日帰り", stay_ishikawa: "4泊以上", stay_area: "金沢エリア", transport_to_ishikawa: "自家用車", transport_to_facility: "自家用車", visit_count: "初めて", info_source: "インターネット・アプリ", revisit_intent: "また行きたい（1年以内）",
-                    service_satisfaction: "とても満足", service_reason: "品揃えが豊富で、見ているだけでも楽しかったです。", facility_satisfaction: "とても満足", facility_reason: "お店の雰囲気がおしゃれで、とても居心地が良かったです。", inconvenience: "感じなかった", inconvenience_reason: "", facility_nps: 7, facility_nps_reason: "ポケふたをもう少し増やして欲しいですね。", pref_nps: 10, pref_nps_reason: "景色も良くてご飯も美味しいので、ぜひ薦めたいです！"
+                    service_satisfaction: "とても満足", service_reason: "品揃えが豊富で、見ているだけでも楽しかったです。", facility_satisfaction: "とても満足", facility_reason: "お店の雰囲気がおしゃれで、とても居心地が良かったです。", inconvenience: "感じなかった", inconvenience_reason: "", facility_nps: 7, facility_nps_reason: "ポケふたをもう少し増やして欲しいですね。", 
+                    facility_demand: "ポケふた増やして欲しい",
+                    pref_nps: 10, pref_nps_reason: "景色も良くてご飯も美味しいので、ぜひ薦めたいです！",
+                    pref_demand: "おいしい海鮮丼が食べたい"
+                },
+                {
+                    id: "u2", timestamp: "5/10/2026 16:58:55", rawDate: new Date("5/10/2026 16:58:55"), facility: "のとじま水族館", gender: "男", birth_year: 1994, ageGroup: "30代", pref: "石川県", city: "中能登町", income: "400万円以上 500万円未満", companion: "小学生以下連れの家族", purpose: "住んでる",
+                    stay_total: "日帰り", stay_ishikawa: "石川県内には宿泊しない", stay_area: "石川県内には宿泊しない", transport_to_ishikawa: "自家用車", transport_to_facility: "自家用車", visit_count: "11回目以上", info_source: "友人・知人", revisit_intent: "石川県在住",
+                    service_satisfaction: "とても満足", service_reason: "子供たちが大はしゃぎでした！また連れてきてあげたいです。", facility_satisfaction: "とても満足", facility_reason: "バリアフリーが行き届いており、ベビーカーでも移動しやすかったです。", inconvenience: "感じなかった", inconvenience_reason: "", facility_nps: 10, facility_nps_reason: "お弁当などを持ち込んで食べるスペースがあってとても快適でした。", 
+                    facility_demand: "ご飯を食べるスペースがもっと増えるといい",
+                    pref_nps: 10, pref_nps_reason: "能登半島はどこを走っても景色が良いのでドライブにお勧めします。",
+                    pref_demand: "特になし"
+                },
+                {
+                    id: "u3", timestamp: "5/10/2026 18:07:55", rawDate: new Date("5/10/2026 18:07:55"), facility: "体験交流施設　ラブロ恋路", gender: "女", birth_year: 1973, ageGroup: "50代", pref: "石川県", city: "鹿島郡中能登町", income: "400万円以上 500万円未満", companion: "中学生以上連れの家族", purpose: "名所、旧跡の観光",
+                    stay_total: "1泊", stay_ishikawa: "1泊", stay_area: "能登エリア", transport_to_ishikawa: "自家用車", transport_to_facility: "自家用車", visit_count: "2～5回目", info_source: "インターネット・アプリ", revisit_intent: "また行きたい（1年以内）",
+                    service_satisfaction: "満足", service_reason: "親切なフロント対応で安心できました。", facility_satisfaction: "とても満足", facility_reason: "目の前に広がる穏やかな海が本当に綺麗でした。", inconvenience: "感じなかった", inconvenience_reason: "", facility_nps: 9, facility_nps_reason: "", 
+                    facility_demand: "食事ができる場所、宿泊施設が少ないのでもう少しあればいいと思う",
+                    pref_nps: 10, pref_nps_reason: "綺麗な海、豊かな自然",
+                    pref_demand: "特になし"
                 }
             ];
             facilities = [...new Set(surveyData.map(d => d.facility))];
@@ -305,36 +330,44 @@
     function processData(parsedData) {
         if (parsedData.data.length < 2) return;
         const headers = parsedData.data[0];
-        const getIdx = (keyword) => headers.findIndex(h => typeof h === 'string' && h.includes(keyword));
+        
+        // 部分一致や表記揺れに対応したインデックス取得関数
+        const getIdx = (keywords) => {
+            return headers.findIndex(h => {
+                if (typeof h !== 'string') return false;
+                return keywords.every(kw => h.includes(kw));
+            });
+        };
 
         const idx = {
-            timestamp: getIdx("タイムスタンプ"),
-            facility: getIdx("施設"),
-            gender: getIdx("性別"),
-            birth_year: getIdx("生まれた年"),
-            pref: getIdx("都道府県"),
-            city: getIdx("市区町村"),
-            income: getIdx("世帯年収"),
-            companion: getIdx("どなたと"),
-            purpose: getIdx("訪問目的"),
-            stay_total: getIdx("全行程での宿泊数"),
-            stay_ishikawa: getIdx("石川県内での宿泊数"),
-            stay_area: getIdx("宿泊エリアをお答えください"),
-            transport_to_ishikawa: getIdx("石川県外から"),
-            transport_to_facility: getIdx("当施設 を訪れる際に利用した主な交通手段"),
-            visit_count: getIdx("何度訪れた"),
-            info_source: getIdx("参考にした情報源"),
-            revisit_intent: getIdx("再び石川県を訪れたい"),
-            service_satisfaction: getIdx("商品・サービスの満足度"),
-            service_reason: getIdx("(サービス)"), 
-            facility_satisfaction: getIdx("施設全体の満足度"),
-            facility_reason: getIdx("(施設全体)"),
-            inconvenience: getIdx("不便を感じたり"),
-            inconvenience_reason: getIdx("不便を感じたり、困ったことについて具体的に"),
-            facility_nps: getIdx("当施設 へのお出かけを、どのくらい家族や友人に薦めたい"),
-            facility_nps_reason: getIdx("当施設 の飲食、土産、アクティビティについて、ご自由にご意見"), 
-            pref_nps: getIdx("石川県への旅行を、どのくらい家族や友人に勧めたい"),
-            pref_nps_reason: getIdx("人に薦めたいと感じたものとその理由"),
+            timestamp: getIdx(["タイムスタンプ"]),
+            facility: getIdx(["施設"]),
+            gender: getIdx(["性別"]),
+            birth_year: getIdx(["生まれた年"]),
+            pref: getIdx(["都道府県"]),
+            city: getIdx(["市区町村"]),
+            income: getIdx(["世帯年収"]),
+            companion: getIdx(["訪れていますか"]),
+            purpose: getIdx(["訪問目的"]),
+            stay_total: getIdx(["宿泊数をお答えください"]), // 日帰りなども含む
+            stay_ishikawa: getIdx(["石川県内での宿泊数"]),
+            stay_area: getIdx(["石川県内での宿泊エリア"]),
+            transport_to_ishikawa: getIdx(["石川県に来られましたか"]),
+            transport_to_facility: getIdx(["当施設", "交通手段"]),
+            visit_count: getIdx(["何度訪れた"]),
+            info_source: getIdx(["情報源"]),
+            revisit_intent: getIdx(["再び石川県を訪れたい"]),
+            service_satisfaction: getIdx(["商品・サービスの満足度"]),
+            service_reason: getIdx(["(サービス)"]), 
+            facility_satisfaction: getIdx(["施設全体の満足度"]),
+            facility_reason: getIdx(["(施設全体)"]),
+            inconvenience: getIdx(["不便を感じたり"]),
+            inconvenience_reason: getIdx(["困ったことについて具体的に"]),
+            facility_nps: getIdx(["薦めたいと思いますか"]),
+            facility_demand: getIdx(["当施設", "飲食、土産、アクティビティについて"]), 
+            pref_nps: getIdx(["石川県への旅行", "勧めたい"]),
+            pref_nps_reason: getIdx(["特に人に薦めたいと感じたものとその理由"]),
+            pref_demand: getIdx(["石川県", "飲食、土産、アクティビティについて"])
         };
 
         surveyData = [];
@@ -384,9 +417,10 @@
                 inconvenience: getVal(idx.inconvenience) || "無回答",
                 inconvenience_reason: getVal(idx.inconvenience_reason),
                 facility_nps: getVal(idx.facility_nps) || "無回答",
-                facility_nps_reason: getVal(idx.facility_nps_reason),
+                facility_demand: getVal(idx.facility_demand),
                 pref_nps: getVal(idx.pref_nps) || "無回答",
-                pref_nps_reason: getVal(idx.pref_nps_reason)
+                pref_nps_reason: getVal(idx.pref_nps_reason),
+                pref_demand: getVal(idx.pref_demand)
             });
         }
         facilities = [...new Set(surveyData.map(d => d.facility))].filter(Boolean);
@@ -548,12 +582,14 @@
                 tags.push(`<span class="${npsColor} text-[0.65rem] px-1.5 py-0.5 rounded border font-bold leading-none">NPS ${user.facility_nps}</span>`);
             }
 
-            // --- 文字数のカウント ---
+            // --- 文字数のカウント (飲食等の自由記述2項目も含む) ---
             const textLen = (user.service_reason || "").length +
                             (user.facility_reason || "").length +
                             (user.inconvenience_reason || "").length +
                             (user.facility_nps_reason || "").length +
-                            (user.pref_nps_reason || "").length;
+                            (user.facility_demand || "").length +
+                            (user.pref_nps_reason || "").length +
+                            (user.pref_demand || "").length;
             
             el.innerHTML = `
                 <div class="flex-shrink-0">${avatar}</div>
@@ -589,13 +625,13 @@
         document.getElementById('chat-header-facility').innerText = currentFacility;
         
         const chatBox = document.getElementById('chat-messages');
-        chatBox.innerHTML = ''; // 読み込み完了テキストを削除
+        chatBox.innerHTML = ''; // 以前の履歴をクリア
         
         // キャンセルトークンをリセット
         chatCancelToken.cancelled = false;
         const currentToken = chatCancelToken;
 
-        // シナリオ定義
+        // シナリオ定義 (飲食等の追加2項目を統合)
         const scenario = [
             { 
                 q: "サービスの満足度はどうでしたか？", 
@@ -613,9 +649,17 @@
                 q: "この施設の友人等へのオススメ度は0～10でどのくらいですか？", 
                 a: u => [ `オススメ度は「${u.facility_nps}」です！`, u.facility_nps_reason ? `「${u.facility_nps_reason}」という理由からです。` : null ] 
             },
+            {
+                q: "当施設に求める飲食、お土産、アクティビティへの要望はありますか？",
+                a: u => [ u.facility_demand && u.facility_demand !== "特になし" ? `「${u.facility_demand}」といったところですね。` : "特には思いつかないですね。" ]
+            },
             { 
                 q: "石川県の旅行の友人等へのオススメ度は0～10でどのくらいですか？", 
                 a: u => [ `石川県全体へのオススメ度は「${u.pref_nps}」です！`, u.pref_nps_reason ? `理由は、${u.pref_nps_reason}` : null ] 
+            },
+            {
+                q: "石川県全体に求める飲食、お土産、アクティビティへの要望はいかがですか？",
+                a: u => [ u.pref_demand && u.pref_demand !== "特になし" ? `「${u.pref_demand}」です。` : "特に要望はありません、満足しています。" ]
             }
         ];
 
@@ -650,7 +694,9 @@
     function appendMessage(side, text) {
         const chatBox = document.getElementById('chat-messages');
         const wrapper = document.createElement('div');
-        wrapper.className = `flex flex-col ${side === 'right' ? 'items-end' : 'items-start'} mb-2`;
+        
+        // ふきだしの不自然な改行を防ぐため、コンテナに w-full を適用して正しい全幅サイズを認知させます
+        wrapper.className = `flex flex-col ${side === 'right' ? 'items-end' : 'items-start'} mb-2 w-full`;
         
         const bubble = document.createElement('div');
         bubble.className = side === 'right' ? 'chat-bubble-right' : 'chat-bubble-left';
@@ -658,7 +704,9 @@
         // 左側の場合はアバターを横に添える（LINE風）
         if (side === 'left') {
             const flexRow = document.createElement('div');
-            flexRow.className = 'flex items-end gap-2 max-w-full';
+            
+            // w-full と max-w-full を並記し、横方向の十分な拡がりを確保（image_fc2cc9.png の不要な折り返しを解決）
+            flexRow.className = 'flex items-end gap-2 max-w-full w-full';
             
             const avatarWrap = document.createElement('div');
             avatarWrap.className = 'flex-shrink-0 mb-1';
@@ -694,7 +742,10 @@
         
         const wrapper = document.createElement('div');
         wrapper.id = id;
-        wrapper.className = 'flex items-end gap-2 max-w-full mb-2';
+        wrapper.className = 'flex flex-col items-start mb-2 w-full';
+        
+        const flexRow = document.createElement('div');
+        flexRow.className = 'flex items-end gap-2 max-w-full w-full';
         
         const avatarWrap = document.createElement('div');
         avatarWrap.className = 'flex-shrink-0 mb-1';
@@ -704,8 +755,9 @@
         bubble.className = 'chat-bubble-left typing-indicator';
         bubble.innerHTML = '<span></span><span></span><span></span>';
         
-        wrapper.appendChild(avatarWrap);
-        wrapper.appendChild(bubble);
+        flexRow.appendChild(avatarWrap);
+        flexRow.appendChild(bubble);
+        wrapper.appendChild(flexRow);
         chatBox.appendChild(wrapper);
         scrollToBottom();
         
@@ -744,7 +796,9 @@
             { label: '来訪回数', value: currentUser.visit_count },
             { label: '参考情報源', value: currentUser.info_source },
             { label: '再訪意向', value: currentUser.revisit_intent },
-            { label: '世帯年収', value: currentUser.income }
+            { label: '世帯年収', value: currentUser.income },
+            { label: '当施設への要望', value: currentUser.facility_demand },
+            { label: '石川県全体への要望', value: currentUser.pref_demand }
         ];
 
         tbody.innerHTML = attrList.map(attr => {
