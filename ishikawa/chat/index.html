@@ -114,8 +114,7 @@
         /* チャット画面固有のスタイル */
         .chat-bg { background-color: #E2E8F0; } /* 爽やかなチャット背景 */
         
-        /* 
-           【ふきだしの潰れ対策】 
+        /* 【ふきだしの潰れ対策】 
            max-widthを75%に固定。親要素の w-full と組み合わせることで、
            テキスト長に応じた自然な折り返し位置を確保します。
         */
@@ -210,6 +209,7 @@
     <div id="screen-chat" class="screen chat-bg">
         <header class="p-3 border-b bg-[var(--tifo-primary)] flex items-center justify-between shadow-sm z-10 relative text-white">
             <div class="flex items-center gap-1 overflow-hidden w-3/5">
+                <!-- 修正点: onclickで直接navigateを呼んでもよいですが、今回の対応でsetRouteが賢くなったのでsetRouteでOKです -->
                 <button onclick="setRoute('users', currentFacility)" class="text-white hover:text-gray-100 flex-shrink-0 p-1">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
                 </button>
@@ -462,13 +462,23 @@
     // --- 画面遷移とURLルーティング制御 ---
     window.addEventListener('hashchange', handleHashChange);
 
+    // 【修正点】ハッシュが同じ場合でもnavigateが確実に呼ばれるように修正しました。
     function setRoute(route, param = null) {
         if (route === 'facility') {
-            window.location.hash = ''; // ハッシュをクリアして施設一覧へ
+            if (window.location.hash === '' || window.location.hash === '#') {
+                navigate('facility');
+            } else {
+                window.location.hash = ''; // ハッシュをクリアして施設一覧へ
+            }
         } else if (route === 'users') {
-            window.location.hash = encodeURIComponent(param); // ハッシュを施設名にして回答者一覧へ
+            const targetHash = '#' + encodeURIComponent(param);
+            if (window.location.hash === targetHash) {
+                navigate('users', param); // すでに同じハッシュなら直接切り替え
+            } else {
+                window.location.hash = encodeURIComponent(param); // ハッシュを施設名にして回答者一覧へ
+            }
         } else if (route === 'chat') {
-            navigate('chat', param); // チャット画面はハッシュを変えずに表示（ブラウザバックでユーザ一覧に戻るため）
+            navigate('chat', param); // チャット画面はハッシュを変えずに表示
         }
     }
 
