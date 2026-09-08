@@ -195,8 +195,30 @@
         <p class="text-lg text-gray-600 mb-8">観光猫型AIアドバイザリー</p>
         <div id="loading-message" class="text-gray-600"><p>データを読み込んでいます...</p></div>
         <div id="main-content" class="w-full max-w-md hidden">
-            <label for="facility-select" class="block mb-2 text-gray-700 font-bold">分析したい施設を選んでにゃ🐾</label>
+            <label for="facility-search-input" class="block mb-2 text-gray-700 font-bold">分析したい施設を選んでにゃ🐾</label>
+
+            <div class="relative mb-3">
+                <span class="material-symbols-outlined tifo-icon absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">search</span>
+                <input
+                    id="facility-search-input"
+                    type="search"
+                    placeholder="施設名を検索"
+                    autocomplete="off"
+                    class="w-full pl-10 pr-10 p-3 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-teal-400 focus:border-teal-400"
+                >
+                <button
+                    id="clear-facility-search-btn"
+                    type="button"
+                    class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    aria-label="施設検索をクリア"
+                >
+                    <span class="material-symbols-outlined text-[20px] leading-none">close</span>
+                </button>
+            </div>
+
             <select id="facility-select" class="w-full p-3 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-teal-400 focus:border-teal-400"></select>
+            <p id="facility-search-result-count" class="text-xs text-gray-500 mt-2 text-right"></p>
+
             <button id="analyze-button" class="tifo-button w-full mt-6">データを分析</button>
         </div>
         <div class="absolute bottom-4">
@@ -506,6 +528,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     const homeScreen = document.getElementById('home-screen');
     const analysisScreen = document.getElementById('analysis-screen');
     const facilitySelect = document.getElementById('facility-select');
+    const facilitySearchInput = document.getElementById('facility-search-input');
+    const clearFacilitySearchBtn = document.getElementById('clear-facility-search-btn');
+    const facilitySearchResultCount = document.getElementById('facility-search-result-count');
     const analyzeButton = document.getElementById('analyze-button');
     const backButton = document.getElementById('back-button');
     const backButtonBottom = document.getElementById('back-button-bottom');
@@ -654,13 +679,71 @@ document.addEventListener('DOMContentLoaded', async () => {
                 displayAnalysis(facilityData);
                 homeScreen.classList.add('hidden');
                 analysisScreen.classList.remove('hidden');
-                facilitySelect.value = facilityNameFromHash;
+                if (facilitySearchInput.value) {
+                    facilitySearchInput.value = '';
+                    renderFacilityOptions('', facilityNameFromHash);
+                } else {
+                    facilitySelect.value = facilityNameFromHash;
+                }
                 return;
             }
         }
         homeScreen.classList.remove('hidden');
         analysisScreen.classList.add('hidden');
     };
+
+    const renderFacilityOptions = (keyword = '', preferredValue = '') => {
+        const normalizedKeyword = String(keyword || '').normalize('NFKC').toLowerCase().trim();
+        const currentValue = preferredValue || facilitySelect.value;
+
+        const filteredFacilities = surveyData.filter(data => {
+            const name = String(data[scoreFacilityKey] || '');
+            if (!normalizedKeyword) return true;
+            return name.normalize('NFKC').toLowerCase().includes(normalizedKeyword);
+        });
+
+        facilitySelect.innerHTML = '';
+
+        filteredFacilities.forEach(data => {
+            const option = document.createElement('option');
+            option.value = data[scoreFacilityKey];
+            option.textContent = data[scoreFacilityKey];
+            facilitySelect.appendChild(option);
+        });
+
+        if (currentValue && filteredFacilities.some(data => data[scoreFacilityKey] === currentValue)) {
+            facilitySelect.value = currentValue;
+        }
+
+        if (filteredFacilities.length === 0) {
+            const option = document.createElement('option');
+            option.value = '';
+            option.textContent = '該当する施設がありません';
+            option.disabled = true;
+            option.selected = true;
+            facilitySelect.appendChild(option);
+        }
+
+        facilitySearchResultCount.textContent = normalizedKeyword
+            ? `${filteredFacilities.length}施設`
+            : `全${surveyData.length}施設`;
+
+        clearFacilitySearchBtn.classList.toggle('hidden', facilitySearchInput.value.length === 0);
+        analyzeButton.disabled = filteredFacilities.length === 0;
+        analyzeButton.classList.toggle('opacity-50', filteredFacilities.length === 0);
+        analyzeButton.classList.toggle('cursor-not-allowed', filteredFacilities.length === 0);
+    };
+
+    facilitySearchInput.addEventListener('input', () => {
+        renderFacilityOptions(facilitySearchInput.value);
+    });
+
+    clearFacilitySearchBtn.addEventListener('click', () => {
+        const previousValue = facilitySelect.value;
+        facilitySearchInput.value = '';
+        renderFacilityOptions('', previousValue);
+        facilitySearchInput.focus();
+    });
 
     async function loadData() {
         try {
@@ -704,12 +787,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             // セレクトボックスに施設名を追加
-            surveyData.forEach(data => {
-                const option = document.createElement('option');
-                option.value = data[scoreFacilityKey];
-                option.textContent = data[scoreFacilityKey];
-                facilitySelect.appendChild(option);
-            });
+            renderFacilityOptions();
 
             loadingMessage.classList.add('hidden');
             mainContent.classList.remove('hidden');
@@ -721,7 +799,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // --- 画面遷移イベント ---
-    analyzeButton.addEventListener('click', () => { location.hash = encodeURIComponent(facilitySelect.value); });
+    analyzeButton.addEventListener('click', () => {
+        if (!facilitySelect.value) return;
+        location.hash = encodeURIComponent(facilitySelect.value);
+    });
     backButton.addEventListener('click', () => { location.hash = ''; });
     backButtonBottom.addEventListener('click', () => { location.hash = ''; });
     window.addEventListener('hashchange', handleRouteChange);
