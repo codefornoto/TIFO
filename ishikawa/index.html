@@ -422,6 +422,30 @@
                 </nav>
             </div>
 
+            <div class="flex-shrink-0 px-5 sm:px-6 py-3 bg-white border-b border-gray-200">
+                <div class="flex items-center gap-2">
+                    <div class="relative flex-1">
+                        <span class="material-symbols-outlined tifo-icon absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">search</span>
+                        <input
+                            id="all-feedback-search-input"
+                            type="search"
+                            placeholder="自由記述をキーワード検索"
+                            autocomplete="off"
+                            class="w-full pl-10 pr-10 py-2.5 text-sm border border-gray-300 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-teal-300 focus:border-teal-400"
+                        >
+                        <button
+                            id="clear-all-feedback-search-btn"
+                            type="button"
+                            class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                            aria-label="検索をクリア"
+                        >
+                            <span class="material-symbols-outlined text-[20px] leading-none">close</span>
+                        </button>
+                    </div>
+                    <span id="all-feedback-search-count" class="text-xs text-gray-500 whitespace-nowrap min-w-[3.5rem] text-right"></span>
+                </div>
+            </div>
+
             <div class="flex-grow min-h-0 p-5 sm:p-6 bg-gray-50">
                 <div id="all-feedback-loading" class="h-full flex flex-col items-center justify-center text-center text-gray-500">
                     <div class="w-9 h-9 rounded-full border-4 border-gray-200 border-t-teal-400 animate-spin mb-3"></div>
@@ -474,6 +498,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 「全件表示」用：GoogleスプレッドシートのMilli全件データは初回クリック時に読み込み、その後はキャッシュ
     let allMilliDataCache = null;
     let allMilliDataPromise = null;
+    let allFeedbackCurrentData = { service: [], facility: [], inconvenience: [], request: [], nps: [] };
+    let allFeedbackActiveTab = 'service';
     const ALL_MILLI_SPREADSHEET_ID = '1riK_ufkmF6Ql7Tujwlm22FtHOLz7hwUzf6Zi6JAG_QI';
     const ALL_MILLI_SHEET_GID = '0';
 
@@ -514,6 +540,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     const allFeedbackError = document.getElementById('all-feedback-error');
     const allFeedbackErrorDetail = document.getElementById('all-feedback-error-detail');
     const allFeedbackContents = document.getElementById('all-feedback-contents');
+    const allFeedbackSearchInput = document.getElementById('all-feedback-search-input');
+    const clearAllFeedbackSearchBtn = document.getElementById('clear-all-feedback-search-btn');
+    const allFeedbackSearchCount = document.getElementById('all-feedback-search-count');
     // ▲▲▲ 全件表示モーダル ▲▲▲
 
     // ▼▼▼ チャットモーダル ▼▼▼
@@ -1012,17 +1041,67 @@ document.addEventListener('DOMContentLoaded', async () => {
         container.scrollTop = 0;
     };
 
+    const normalizeSearchText = (value) => String(value || '')
+        .normalize('NFKC')
+        .toLowerCase()
+        .trim();
+
+    const getAllFeedbackSearchKeywords = () => normalizeSearchText(allFeedbackSearchInput.value)
+        .split(/\s+/)
+        .filter(Boolean);
+
+    const getFilteredAllFeedbackComments = (tabName) => {
+        const source = allFeedbackCurrentData[tabName] || [];
+        const keywords = getAllFeedbackSearchKeywords();
+        if (keywords.length === 0) return source;
+
+        return source.filter(comment => {
+            // 検索対象は自由記述本文のみ
+            const text = normalizeSearchText(comment.text);
+            return keywords.every(keyword => text.includes(keyword));
+        });
+    };
+
+    const renderActiveAllFeedbackTab = () => {
+        const filtered = getFilteredAllFeedbackComments(allFeedbackActiveTab);
+        renderAllFeedbackComments(
+            `all-feedback-content-${allFeedbackActiveTab}`,
+            filtered,
+            allFeedbackActiveTab
+        );
+
+        const total = (allFeedbackCurrentData[allFeedbackActiveTab] || []).length;
+        const hasKeyword = getAllFeedbackSearchKeywords().length > 0;
+        allFeedbackSearchCount.textContent = hasKeyword
+            ? `${filtered.length}/${total}件`
+            : `${total}件`;
+
+        clearAllFeedbackSearchBtn.classList.toggle('hidden', allFeedbackSearchInput.value.length === 0);
+    };
+
     const setAllFeedbackTab = (tabName) => {
+        allFeedbackActiveTab = tabName;
+
         document.querySelectorAll('.all-feedback-tab-button').forEach(btn => {
             btn.classList.toggle('active', btn.dataset.allTab === tabName);
         });
         document.querySelectorAll('.all-feedback-content').forEach(content => {
             content.classList.toggle('hidden', content.id !== `all-feedback-content-${tabName}`);
         });
+
+        renderActiveAllFeedbackTab();
     };
 
     document.querySelectorAll('.all-feedback-tab-button').forEach(tab => {
         tab.addEventListener('click', () => setAllFeedbackTab(tab.dataset.allTab));
+    });
+
+    allFeedbackSearchInput.addEventListener('input', renderActiveAllFeedbackTab);
+
+    clearAllFeedbackSearchBtn.addEventListener('click', () => {
+        allFeedbackSearchInput.value = '';
+        allFeedbackSearchInput.focus();
+        renderActiveAllFeedbackTab();
     });
 
     const renderAllFeedbackModal = async (facilityName) => {
@@ -1030,7 +1109,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         allFeedbackLoading.classList.remove('hidden');
         allFeedbackError.classList.add('hidden');
         allFeedbackContents.classList.add('hidden');
-        setAllFeedbackTab('service');
+        allFeedbackSearchInput.value = '';
+        clearAllFeedbackSearchBtn.classList.add('hidden');
+        allFeedbackSearchCount.textContent = '';
+        allFeedbackActiveTab = 'service';
+
+        document.querySelectorAll('.all-feedback-tab-button').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.allTab === 'service');
+        });
+        document.querySelectorAll('.all-feedback-content').forEach(content => {
+            content.classList.toggle('hidden', content.id !== 'all-feedback-content-service');
+        });
 
         try {
             const allData = await fetchAllMilliData();
@@ -1055,11 +1144,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (row.npsReason) feedback.nps.push({ ...commonData, text: row.npsReason, score: row.npsScore });
             });
 
-            renderAllFeedbackComments('all-feedback-content-service', feedback.service, 'service');
-            renderAllFeedbackComments('all-feedback-content-facility', feedback.facility, 'facility');
-            renderAllFeedbackComments('all-feedback-content-inconvenience', feedback.inconvenience, 'inconvenience');
-            renderAllFeedbackComments('all-feedback-content-request', feedback.request, 'request');
-            renderAllFeedbackComments('all-feedback-content-nps', feedback.nps, 'nps');
+            allFeedbackCurrentData = feedback;
+            renderActiveAllFeedbackTab();
 
             const totalVoices = feedback.service.length + feedback.facility.length + feedback.inconvenience.length + feedback.request.length + feedback.nps.length;
             allFeedbackModalSubtitle.textContent = `${facilityName}｜${filteredData.length}回答・自由記述 ${totalVoices}件`;
