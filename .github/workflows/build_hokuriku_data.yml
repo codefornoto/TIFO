@@ -1,0 +1,92 @@
+name: Build Hokuriku TIFO data v2 (no tests)
+
+on:
+  schedule:
+    # 毎週月曜日 03:00 JST（GitHub ActionsのcronはUTC指定）
+    - cron: '0 18 * * 0'
+  workflow_dispatch:
+
+concurrency:
+  group: build-hokuriku-tifo-data
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout TIFO
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Build lightweight CSV files
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          echo "Workspace: ${GITHUB_WORKSPACE}"
+          python -u "${GITHUB_WORKSPACE}/scripts/build_hokuriku_data_v2.py" \
+            --repo "hokuriku-inbound-kanko/opendata" \
+            --branch "main" \
+            --output-dir "${GITHUB_WORKSPACE}"
+
+          required_files=(
+            "tifo_data_manifest.json"
+            "tifo_summary_all.csv"
+            "tifo_trend_monthly.csv"
+            "tifo_routes_all.csv"
+          )
+
+          for file in "${required_files[@]}"; do
+            if [[ ! -f "${GITHUB_WORKSPACE}/${file}" ]]; then
+              echo "::error::Required output was not created: ${file}"
+              echo "Files found under the repository:"
+              find "${GITHUB_WORKSPACE}" -maxdepth 3 -type f \
+                \( -name 'tifo_*' -o -name 'manifest.json' -o -name 'summary_all.csv' -o -name 'daily_*.csv' -o -name 'routes_*.csv' \) \
+                -print | sort
+              exit 1
+            fi
+          done
+
+          compgen -G "${GITHUB_WORKSPACE}/tifo_daily_*.csv" > /dev/null || {
+            echo "::error::No tifo_daily_*.csv files were created."
+            exit 1
+          }
+
+          compgen -G "${GITHUB_WORKSPACE}/tifo_routes_*.csv" > /dev/null || {
+            echo "::error::No tifo_routes_*.csv files were created."
+            exit 1
+          }
+
+      - name: Show output sizes
+        shell: bash
+        run: |
+          set -euo pipefail
+          find "${GITHUB_WORKSPACE}" -maxdepth 1 -type f \
+            \( -name 'tifo_data_manifest.json' -o -name 'tifo_*.csv' \) \
+            -print0 | xargs -0 du -h | sort -h
+
+      - name: Commit generated data when changed
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "${GITHUB_WORKSPACE}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add tifo_data_manifest.json tifo_summary_all.csv tifo_trend_monthly.csv tifo_daily_*.csv tifo_routes_*.csv
+
+          if git diff --cached --quiet; then
+            echo "No data changes."
+          else
+            git commit -m "data: rebuild Hokuriku TIFO aggregates ($(date -u +'%Y-%m-%dT%H:%M:%SZ'))"
+            git push
+          fi
