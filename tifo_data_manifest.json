@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generated_at": "2026-10-18T20:22:58Z",
+  "generated_at": "2026-10-25T20:39:19Z",
   "source": "https://github.com/hokuriku-inbound-kanko/opendata/tree/main/output_merge",
   "source_files": [
     "merged_survey_2023.csv",
@@ -9,8 +9,8 @@
     "merged_survey_2026.csv"
   ],
   "min_date": "2023-04-28",
-  "max_date": "2026-10-18",
-  "response_count": 137936,
+  "max_date": "2026-10-25",
+  "response_count": 138835,
   "invalid_date_count": 0,
   "available_years": [
     2023,
